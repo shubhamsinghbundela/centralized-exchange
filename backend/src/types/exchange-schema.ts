@@ -24,3 +24,8 @@ export const orderBodySchema = z.discriminatedUnion("type", [
     qty: z.number().positive("qty must be a positive number"),
   }),
 ]);
+
+export const depositSchema = z.object({
+  asset: z.string().trim().min(1, "asset is required"),
+  amount: z.number().positive("amount must be positive"),
+});

@@ -1,8 +1,10 @@
 import "dotenv/config";
 import { createClient } from "redis";
 import { env } from "./utils/env.js";
+import { BALANCES } from "./store/exchange-store.js";
 
 export type EngineCommandType =
+  | "deposit"
   | "create_order"
   | "get_depth"
   | "get_user_balance"
@@ -23,13 +25,19 @@ export interface EngineResponse {
   error?: string;
 }
 
-const brokerClient = createClient({ url: env.redisUrl }).on("error", (error) => {
-  console.error("Redis broker client error", error);
-});
+const brokerClient = createClient({ url: env.redisUrl }).on(
+  "error",
+  (error) => {
+    console.error("Redis broker client error", error);
+  },
+);
 
-const responseClient = createClient({ url: env.redisUrl }).on("error", (error) => {
-  console.error("Redis response client error", error);
-});
+const responseClient = createClient({ url: env.redisUrl }).on(
+  "error",
+  (error) => {
+    console.error("Redis response client error", error);
+  },
+);
 
 await Promise.all([brokerClient.connect(), responseClient.connect()]);
 
@@ -46,8 +54,39 @@ const DUMMY_SELL_ORDER = {
   status: "open",
 };
 
-async function sendResponse(responseQueue: string, response: EngineResponse): Promise<void> {
+async function sendResponse(
+  responseQueue: string,
+  response: EngineResponse,
+): Promise<void> {
   await responseClient.lPush(responseQueue, JSON.stringify(response));
+}
+
+function handleDeposit(payload: Record<string, unknown>) {
+  const userId = payload.userId as string;
+  const asset = payload.asset as string;
+  const amount = Number(payload.amount);
+
+  let balances = BALANCES.get(userId);
+
+  if (!balances) {
+    balances = {};
+    BALANCES.set(userId, balances);
+  }
+
+  const balance = balances[asset] ?? {
+    available: 0,
+    locked: 0,
+  };
+
+  balance.available += amount;
+
+  balances[asset] = balance;
+
+  return {
+    userId,
+    asset,
+    balance,
+  };
 }
 
 function handleEngineRequest(message: EngineRequest): unknown {
@@ -85,6 +124,10 @@ function handleEngineRequest(message: EngineRequest): unknown {
       ],
       note: "Smoke-test response only. Students must replace this with real matching logic.",
     };
+  }
+
+  if (message.type === "deposit") {
+    return handleDeposit(message.payload);
   }
 
   throw new Error("TODO(student): implement this engine request type");

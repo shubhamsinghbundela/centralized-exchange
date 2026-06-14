@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import {
+  depositSchema,
   orderBodySchema,
   orderIdParamSchema,
   symbolParamSchema,
@@ -10,6 +11,33 @@ import { sendValidationError } from "../utils/validation.js";
 function getUserId(req: Request): string {
   if (!req.userId) throw new Error("Missing authenticated user");
   return req.userId;
+}
+
+export async function depositMoney(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+
+  const parsedBody = depositSchema.safeParse(req.body);
+
+  if (!parsedBody.success) {
+    sendValidationError(res, parsedBody.error);
+    return;
+  }
+
+  const { asset, amount } = parsedBody.data;
+
+  const engineResponse = await sendToEngine("deposit", {
+    userId,
+    asset,
+    amount,
+  });
+
+  res.status(engineResponse.ok ? 200 : 400).json(
+    engineResponse.ok
+      ? engineResponse.data
+      : {
+          error: engineResponse.error,
+        },
+  );
 }
 
 export async function createOrder(req: Request, res: Response): Promise<void> {
@@ -33,9 +61,13 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
     qty,
   });
 
-  res.status(engineResponse.ok ? 200 : 400).json(engineResponse.ok ? engineResponse.data : {
-    error: engineResponse.error,
-  });
+  res.status(engineResponse.ok ? 200 : 400).json(
+    engineResponse.ok
+      ? engineResponse.data
+      : {
+          error: engineResponse.error,
+        },
+  );
 }
 
 export async function getDepth(req: Request, res: Response): Promise<void> {
@@ -47,9 +79,13 @@ export async function getDepth(req: Request, res: Response): Promise<void> {
 
   const { symbol } = parsedParams.data;
   const engineResponse = await sendToEngine("get_depth", { symbol });
-  res.status(engineResponse.ok ? 200 : 400).json(engineResponse.ok ? engineResponse.data : {
-    error: engineResponse.error,
-  });
+  res.status(engineResponse.ok ? 200 : 400).json(
+    engineResponse.ok
+      ? engineResponse.data
+      : {
+          error: engineResponse.error,
+        },
+  );
 }
 
 export async function getBalance(req: Request, res: Response): Promise<void> {
@@ -57,9 +93,13 @@ export async function getBalance(req: Request, res: Response): Promise<void> {
     userId: getUserId(req),
   });
 
-  res.status(engineResponse.ok ? 200 : 400).json(engineResponse.ok ? engineResponse.data : {
-    error: engineResponse.error,
-  });
+  res.status(engineResponse.ok ? 200 : 400).json(
+    engineResponse.ok
+      ? engineResponse.data
+      : {
+          error: engineResponse.error,
+        },
+  );
 }
 
 export async function getOrder(req: Request, res: Response): Promise<void> {
@@ -75,9 +115,13 @@ export async function getOrder(req: Request, res: Response): Promise<void> {
     orderId,
   });
 
-  res.status(engineResponse.ok ? 200 : 404).json(engineResponse.ok ? engineResponse.data : {
-    error: engineResponse.error,
-  });
+  res.status(engineResponse.ok ? 200 : 404).json(
+    engineResponse.ok
+      ? engineResponse.data
+      : {
+          error: engineResponse.error,
+        },
+  );
 }
 
 export async function cancelOrder(req: Request, res: Response): Promise<void> {
@@ -93,7 +137,11 @@ export async function cancelOrder(req: Request, res: Response): Promise<void> {
     orderId,
   });
 
-  res.status(engineResponse.ok ? 200 : 400).json(engineResponse.ok ? engineResponse.data : {
-    error: engineResponse.error,
-  });
+  res.status(engineResponse.ok ? 200 : 400).json(
+    engineResponse.ok
+      ? engineResponse.data
+      : {
+          error: engineResponse.error,
+        },
+  );
 }

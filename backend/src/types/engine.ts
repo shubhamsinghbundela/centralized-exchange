@@ -3,6 +3,7 @@ export type EngineCommandType =
   | "get_depth"
   | "get_user_balance"
   | "get_order"
+  | "deposit"
   | "cancel_order";
 
 export interface EngineRequest {
