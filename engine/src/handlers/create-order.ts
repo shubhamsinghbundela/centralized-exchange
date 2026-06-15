@@ -1,4 +1,5 @@
 import {
+  BALANCES,
   FILLS,
   ORDERBOOKS,
   ORDERS,
@@ -13,6 +14,11 @@ import { getOrderBook } from "./getOrderBook.js";
 export function handleCreateOrder(payload: Record<string, unknown>) {
   const input = payload as unknown as CreateOrderInput;
 
+  // ----------------------------------
+  // Validate Input
+  // ----------------------------------
+
+  // Limit orders must always have a price.
   if (input.price === null) {
     throw new Error("Price is required for limit orders");
   }
@@ -22,23 +28,29 @@ export function handleCreateOrder(payload: Record<string, unknown>) {
   // ----------------------------------
 
   if (input.side === "buy") {
+    // Buyer pays using USD.
     const usdBalance = getBalance(input.userId, "USD");
 
+    // Total amount needed to place this order.
     const requiredAmount = input.price * input.qty;
 
     if (usdBalance.available < requiredAmount) {
       throw new Error("Insufficient USD balance");
     }
 
+    // Move funds from available -> locked.
+    // This prevents double spending while the order is active.
     usdBalance.available -= requiredAmount;
     usdBalance.locked += requiredAmount;
   } else {
+    // Seller must own enough of the asset being sold.
     const assetBalance = getBalance(input.userId, input.symbol);
 
     if (assetBalance.available < input.qty) {
       throw new Error(`Insufficient ${input.symbol} balance`);
     }
 
+    // Lock the asset so it cannot be sold twice.
     assetBalance.available -= input.qty;
     assetBalance.locked += input.qty;
   }
@@ -49,6 +61,7 @@ export function handleCreateOrder(payload: Record<string, unknown>) {
 
   const orderId = crypto.randomUUID();
 
+  // Store order immediately so it can be queried later.
   const order: OrderRecord = {
     orderId,
     userId: input.userId,
@@ -66,38 +79,43 @@ export function handleCreateOrder(payload: Record<string, unknown>) {
   ORDERS.set(orderId, order);
 
   // ----------------------------------
-  // Get OrderBook
+  // Get Order Book
   // ----------------------------------
 
   const book = getOrderBook(input.symbol);
 
+  // Quantity still waiting to be matched.
   let remainingQty = input.qty;
 
+  // All fills generated during matching.
   const fills: Fill[] = [];
 
-  // BUY => match against asks
+  // Buy orders match against asks.
+  // Sell orders match against bids.
   const oppositeSide = input.side === "buy" ? book.asks : book.bids;
 
-  // sort prices
-  const prices = [...oppositeSide.keys()].sort(
-    (a, b) =>
-      input.side === "buy"
-        ? a - b // lowest ask first
-        : b - a, // highest bid first
+  // Sort price levels.
+  // Buy => lowest ask first.
+  // Sell => highest bid first.
+  const prices = [...oppositeSide.keys()].sort((a, b) =>
+    input.side === "buy" ? a - b : b - a,
   );
 
-  // -----------------------------
+  // ----------------------------------
   // No Liquidity Available
-  // -----------------------------
+  // ----------------------------------
 
   if (prices.length === 0) {
+    // No opposite-side orders exist.
+    // Current order becomes a resting maker order.
+
     const restingOrder: RestingOrder = {
       orderId,
       userId: input.userId,
       side: input.side,
       type: "limit",
       symbol: input.symbol,
-      price: input.price!,
+      price: input.price,
       qty: input.qty,
       filledQty: 0,
       status: "open",
@@ -106,11 +124,15 @@ export function handleCreateOrder(payload: Record<string, unknown>) {
 
     const sameSideMap = input.side === "buy" ? book.bids : book.asks;
 
-    const level = sameSideMap.get(input.price!) ?? [];
+    const level = sameSideMap.get(input.price) ?? [];
 
     level.push(restingOrder);
 
-    sameSideMap.set(input.price!, level);
+    sameSideMap.set(input.price, level);
+
+    console.log("ORDERBOOKS", ORDERBOOKS);
+    console.log("ORDERS", ORDERS);
+    console.log("BALANCES", BALANCES);
 
     return {
       orderId,
@@ -126,67 +148,57 @@ export function handleCreateOrder(payload: Record<string, unknown>) {
   // ----------------------------------
 
   for (const price of prices) {
-    // BUY orders can only match asks priced at or below the buyer's limit price.
-    // If the ask price is higher than what the buyer is willing to pay,
-    // stop searching because prices are sorted from lowest to highest.
+    // Buyer will not pay more than limit price.
     if (input.side === "buy" && input.price !== null && price > input.price) {
       break;
     }
 
-    // SELL orders can only match bids priced at or above the seller's limit price.
-    // If the bid price is lower than what the seller is willing to accept,
-    // stop searching because prices are sorted from highest to lowest.
+    // Seller will not accept less than limit price.
     if (input.side === "sell" && input.price !== null && price < input.price) {
       break;
     }
 
-    // ORDERBOOK {
-    //   bids: Map(2) {
-    //     80: [
-    //       [Object ...], [Object ...]
-    //     ],
-    //     81: [
-    //       [Object ...]
-    //     ],
-    //   },
-    //   asks: Map {},
-    // }
-
-    // Suppose price = 80 then restingOrders = 80 : [[Object ...], [Object ...]]
+    // All resting orders at this price level.
     const restingOrders = oppositeSide.get(price);
 
     if (!restingOrders) {
       continue;
     }
 
+    // FIFO matching inside the same price level.
     for (const restingOrder of restingOrders) {
+      if (restingOrder.userId === input.userId) {
+        continue;
+      }
       if (remainingQty <= 0) {
         break;
       }
 
-      // availableQty = 5
+      // Unfilled quantity remaining on maker order.
       const availableQty = restingOrder.qty - restingOrder.filledQty;
 
       if (availableQty <= 0) {
         continue;
       }
 
-      // remainingQty = 1, availableQty = 5
-      // matchedQty = 1
+      // Trade quantity is the minimum of:
+      // - what taker still wants
+      // - what maker still has available
       const matchedQty = Math.min(remainingQty, availableQty);
 
-      // remainingQty = 0
+      // Reduce remaining quantity of incoming order.
       remainingQty -= matchedQty;
 
-      // restingOrder.filledQty = 1 i.e. 80dollar ma 5 sol buy krna tha
-      // toh koi sell krna aaya 80 dollar ma 1 sol ko toh mai 1 sol buy krh liya
+      // Increase filled quantity of resting order.
       restingOrder.filledQty += matchedQty;
 
+      // Update maker order status.
       restingOrder.status =
         restingOrder.filledQty === restingOrder.qty
           ? "filled"
           : "partially_filled";
 
+      // Create trade execution record.
       const fill: Fill = {
         fillId: crypto.randomUUID(),
         symbol: input.symbol,
@@ -197,35 +209,93 @@ export function handleCreateOrder(payload: Record<string, unknown>) {
         createdAt: Date.now(),
       };
 
+      //This is the list of fills for the current order only.
       fills.push(fill);
+
+      // --------------------------------//
+      //FILLS is your global trade history.
+      //Every trade executed on the exchange gets stored here.
+      // This is useful for:
+      // Recent trades
+      // Trade history
+      // Candlestick generation
+      // Market data
+      // Volume calculations
+      //----------------------------------//
       FILLS.push(fill);
 
-      // -----------------------------
+      const makerOrder = ORDERS.get(restingOrder.orderId);
+
+      if (makerOrder) {
+        makerOrder.filledQty += matchedQty;
+
+        makerOrder.status =
+          makerOrder.filledQty === makerOrder.qty
+            ? "filled"
+            : "partially_filled";
+
+        makerOrder.fills.push(fill);
+      }
+
+      // ----------------------------------
       // Balance Settlement
-      // -----------------------------
+      // ----------------------------------
 
       if (input.side === "buy") {
+        // Incoming order is BUY.
+        // Seller was already resting on the book.
+
+        const buyerStock = getBalance(input.userId, input.symbol);
+
+        const buyerUsd = getBalance(input.userId, "USD");
+
+        const sellerStock = getBalance(restingOrder.userId, input.symbol);
+
+        const sellerUsd = getBalance(restingOrder.userId, "USD");
+
+        // Buyer receives asset.
+        buyerStock.available += matchedQty;
+
+        // Release spent USD from buyer's locked balance.
+        buyerUsd.locked -= matchedQty * price;
+
+        // Seller delivers locked asset.
+        sellerStock.locked -= matchedQty;
+
+        // Seller receives USD.
+        sellerUsd.available += matchedQty * price;
       } else {
-        //mai sell krna aaya hu abhi toh
+        // Incoming order is SELL.
+        // Buyer was already resting on the book.
+
         const sellerUsd = getBalance(input.userId, "USD");
+
+        const sellerStock = getBalance(input.userId, input.symbol);
 
         const buyerStock = getBalance(restingOrder.userId, input.symbol);
 
         const buyerUsd = getBalance(restingOrder.userId, "USD");
 
+        // Seller delivers locked asset.
+        sellerStock.locked -= matchedQty;
+
+        // Seller receives USD.
         sellerUsd.available += matchedQty * price;
 
+        // Buyer spends locked USD.
         buyerUsd.locked -= matchedQty * price;
 
+        // Buyer receives asset.
         buyerStock.available += matchedQty;
       }
 
-      // remove filled orders
+      // Remove completely filled maker orders later.
       oppositeSide.set(
         price,
         restingOrders.filter((o) => o.status !== "filled"),
       );
 
+      // Remove empty price levels.
       if (oppositeSide.get(price)?.length === 0) {
         oppositeSide.delete(price);
       }
@@ -234,21 +304,45 @@ export function handleCreateOrder(payload: Record<string, unknown>) {
         break;
       }
     }
-
-    // ----------------------------------
-    // 4. Remaining Qty -> OrderBook
-    // ----------------------------------
-
-    if (remainingQty > 0 && input.type === "limit") {
-    }
   }
 
   // ----------------------------------
-  // 5. Store Order
+  // Remaining Quantity -> Order Book
   // ----------------------------------
 
+  // If some quantity is still unfilled,
+  // place the remaining order onto the book.
+  if (remainingQty > 0 && input.type === "limit") {
+    const restingOrder: RestingOrder = {
+      orderId,
+      userId: input.userId,
+      side: input.side,
+      type: "limit",
+      symbol: input.symbol,
+      price: input.price!,
+      qty: input.qty,
+      filledQty: input.qty - remainingQty,
+      status: remainingQty === input.qty ? "open" : "partially_filled",
+      createdAt: Date.now(),
+    };
+
+    const sideMap = input.side === "buy" ? book.bids : book.asks;
+
+    const level = sideMap.get(input.price!) ?? [];
+
+    level.push(restingOrder);
+
+    sideMap.set(input.price!, level);
+  }
+
+  // ----------------------------------
+  // Update Order Record
+  // ----------------------------------
+
+  // Total quantity executed.
   order.filledQty = input.qty - remainingQty;
 
+  // Final order status.
   order.status =
     remainingQty === 0
       ? "filled"
@@ -256,9 +350,15 @@ export function handleCreateOrder(payload: Record<string, unknown>) {
         ? "open"
         : "partially_filled";
 
+  // Attach generated fills.
   order.fills = fills;
 
+  // Persist latest order state.
   ORDERS.set(orderId, order);
+
+  console.log("ORDERBOOKS", ORDERBOOKS);
+  console.log("ORDERS", ORDERS);
+  console.log("BALANCES", BALANCES);
 
   return {
     orderId,
