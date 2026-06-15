@@ -2,6 +2,7 @@ import "dotenv/config";
 import { createClient } from "redis";
 import { env } from "./utils/env.js";
 import { handleDeposit } from "./handlers/deposit.js";
+import { handleCreateOrder } from "./handlers/create-order.js";
 
 export type EngineCommandType =
   | "deposit"
@@ -79,23 +80,7 @@ function handleEngineRequest(message: EngineRequest): unknown {
 
   // just checking the flow, remove this when you start implementing the logic
   if (message.type === "create_order") {
-    return {
-      orderId: crypto.randomUUID(),
-      status: "filled",
-      filledQty: DUMMY_SELL_ORDER.qty,
-      averagePrice: DUMMY_SELL_ORDER.price,
-      fills: [
-        {
-          fillId: crypto.randomUUID(),
-          symbol: DUMMY_SELL_ORDER.symbol,
-          price: DUMMY_SELL_ORDER.price,
-          qty: DUMMY_SELL_ORDER.qty,
-          buyOrderId: "request-buy-order",
-          sellOrderId: DUMMY_SELL_ORDER.orderId,
-        },
-      ],
-      note: "Smoke-test response only. Students must replace this with real matching logic.",
-    };
+    return handleCreateOrder(message.payload);
   }
 
   if (message.type === "deposit") {
