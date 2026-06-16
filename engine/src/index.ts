@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { createClient } from "redis";
 import { env } from "./utils/env.js";
-import { handleDeposit } from "./handlers/deposit.js";
-import { handleCreateOrder } from "./handlers/create-order.js";
+import { handleDeposit } from "./deposits/deposit.js";
+import { handleCreateOrder } from "./orders/handleCreateOrder.js";
 
 export type EngineCommandType =
   | "deposit"
