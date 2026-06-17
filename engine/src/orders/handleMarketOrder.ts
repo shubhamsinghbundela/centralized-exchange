@@ -10,10 +10,13 @@ import { matchMarketOrder } from "./market/matchMarketOrder";
 import { getBalance } from "../utils/getBalance";
 
 export function handleMarketOrder(input: CreateOrderInput) {
+  // Validates that the user has sufficient balance for a market order
+  // and locks the required funds/assets before matching begins.
   validateAndLockMarketBalance(input);
 
   const orderId = crypto.randomUUID();
 
+  // Create a market order record
   const order: OrderRecord = {
     orderId,
     userId: input.userId,
@@ -27,10 +30,13 @@ export function handleMarketOrder(input: CreateOrderInput) {
     fills: [],
     createdAt: Date.now(),
   };
+
+  // Match Incoming Order
   const { remainingQty, fills, averagePrice } = matchMarketOrder(input);
 
   const filledQty = input.qty - remainingQty;
 
+  // Update Order Record
   order.filledQty = filledQty;
   order.fills = fills;
 

@@ -2,6 +2,14 @@ import type { CreateOrderInput } from "../../store/exchange-store";
 import { getBalance } from "../../utils/getBalance";
 import { getOrderBook } from "../../utils/getOrderBook";
 
+/**
+ * Market buy orders consume liquidity from the ask side.
+ * Calculate the total USD needed by simulating execution
+ * against the current order book.
+ *
+ * Start from the cheapest ask and move upward until
+ * the requested quantity is fully satisfied.
+ */
 export function validateMarketBuyBalance(input: CreateOrderInput) {
   const usdBalance = getBalance(input.userId, "USD");
 
@@ -43,10 +51,7 @@ export function validateMarketBuyBalance(input: CreateOrderInput) {
     }
   }
 
-  // if (requiredUsd === 0) {
-  //   throw new Error("No liquidity available");
-  // }
-
+  // Ensure the user has enough USD to execute the market buy.
   if (usdBalance.available < requiredUsd) {
     throw new Error("Insufficient USD balance");
   }
