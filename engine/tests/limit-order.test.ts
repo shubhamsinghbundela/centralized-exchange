@@ -524,4 +524,77 @@ describe("Limit Order Matching", () => {
       locked: 5,
     });
   });
+
+  test("orders at same price should match in FIFO order", () => {
+    BALANCES.set("seller1", {
+      BTC: {
+        available: 5,
+        locked: 0,
+      },
+    });
+
+    BALANCES.set("seller2", {
+      BTC: {
+        available: 5,
+        locked: 0,
+      },
+    });
+
+    BALANCES.set("buyer", {
+      USD: {
+        available: 1000,
+        locked: 0,
+      },
+    });
+
+    // First sell order
+    handleLimitOrder({
+      userId: "seller1",
+      type: "limit",
+      side: "sell",
+      symbol: "BTC",
+      price: 100,
+      qty: 5,
+    });
+
+    const firstSellOrderId: string = [...ORDERS.keys()][0]!;
+
+    // Second sell order
+    handleLimitOrder({
+      userId: "seller2",
+      type: "limit",
+      side: "sell",
+      symbol: "BTC",
+      price: 100,
+      qty: 5,
+    });
+
+    const secondSellOrderId: string = [...ORDERS.keys()][1]!;
+
+    // Buy order
+    const result = handleLimitOrder({
+      userId: "buyer",
+      type: "limit",
+      side: "buy",
+      symbol: "BTC",
+      price: 100,
+      qty: 5,
+    });
+
+    expect(result).toMatchObject({
+      status: "filled",
+      filledQty: 5,
+      averagePrice: 100,
+    });
+
+    const firstSellOrder = ORDERS.get(firstSellOrderId);
+    const secondSellOrder = ORDERS.get(secondSellOrderId);
+
+    // FIFO check
+    expect(firstSellOrder?.status).toBe("filled");
+    expect(firstSellOrder?.filledQty).toBe(5);
+
+    expect(secondSellOrder?.status).toBe("open");
+    expect(secondSellOrder?.filledQty).toBe(0);
+  });
 });
