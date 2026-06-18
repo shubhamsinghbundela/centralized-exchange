@@ -1,17 +1,19 @@
 import { BALANCES, type Balance } from "../store/exchange-store";
 
-export function getBalance(userId: string, asset: string): Balance {
-  const balances = BALANCES.get(userId);
+export function getBalance(userId: string, asset: string) {
+  let balances = BALANCES.get(userId);
 
   if (!balances) {
-    throw new Error("User balance not found");
+    balances = {};
+    BALANCES.set(userId, balances);
   }
 
-  const balance = balances[asset];
-
-  if (!balance) {
-    throw new Error(`No ${asset} balance found`);
+  if (!balances[asset]) {
+    balances[asset] = {
+      available: 0,
+      locked: 0,
+    };
   }
 
-  return balance;
+  return balances[asset];
 }
