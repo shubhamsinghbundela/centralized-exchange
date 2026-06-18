@@ -5,6 +5,7 @@ import { handleDeposit } from "./deposits/deposit.js";
 import { handleCreateOrder } from "./orders/handleCreateOrder.js";
 import { getDepth } from "./depth/getDepth.js";
 import { getUserBalance } from "./balance/getUserBalance.js";
+import { getOrder } from "./orders/getOrder.js";
 
 export type EngineCommandType =
   | "deposit"
@@ -93,6 +94,15 @@ function handleEngineRequest(message: EngineRequest): unknown {
     const { symbol } = message.payload as { symbol: string };
 
     return getDepth(symbol);
+  }
+
+  if (message.type === "get_order") {
+    const { userId, orderId } = message.payload as {
+      userId: string;
+      orderId: string;
+    };
+
+    return getOrder(userId, orderId);
   }
 
   if (message.type === "get_user_balance") {
