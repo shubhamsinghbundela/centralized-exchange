@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 
-import { BALANCES, ORDERBOOKS } from "../src/store/exchange-store";
+import { BALANCES, ORDERBOOKS, ORDERS } from "../src/store/exchange-store";
 import { getDepth } from "../src/depth/getDepth";
 import { handleLimitOrder } from "../src/orders/handleLimitOrder";
 
 describe("Order Book Depth", () => {
   beforeEach(() => {
+    BALANCES.clear();
     ORDERBOOKS.clear();
+    ORDERS.clear();
   });
 
   test("should return empty bids and asks when order book does not exist", () => {
