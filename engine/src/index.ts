@@ -6,6 +6,7 @@ import { handleCreateOrder } from "./orders/handleCreateOrder.js";
 import { getDepth } from "./depth/getDepth.js";
 import { getUserBalance } from "./balance/getUserBalance.js";
 import { getOrder } from "./orders/getOrder.js";
+import { cancelOrder } from "./orders/cancelOrder.js";
 
 export type EngineCommandType =
   | "deposit"
@@ -111,6 +112,15 @@ function handleEngineRequest(message: EngineRequest): unknown {
     };
 
     return getUserBalance(userId);
+  }
+
+  if (message.type === "cancel_order") {
+    const { userId, orderId } = message.payload as {
+      userId: string;
+      orderId: string;
+    };
+
+    return cancelOrder(userId, orderId);
   }
 
   throw new Error("TODO(student): implement this engine request type");
