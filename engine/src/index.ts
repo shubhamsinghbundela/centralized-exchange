@@ -3,6 +3,7 @@ import { createClient } from "redis";
 import { env } from "./utils/env.js";
 import { handleDeposit } from "./deposits/deposit.js";
 import { handleCreateOrder } from "./orders/handleCreateOrder.js";
+import { getDepth } from "./depth/getDepth.js";
 
 export type EngineCommandType =
   | "deposit"
@@ -85,6 +86,12 @@ function handleEngineRequest(message: EngineRequest): unknown {
 
   if (message.type === "deposit") {
     return handleDeposit(message.payload);
+  }
+
+  if (message.type === "get_depth") {
+    const { symbol } = message.payload as { symbol: string };
+
+    return getDepth(symbol);
   }
 
   throw new Error("TODO(student): implement this engine request type");
