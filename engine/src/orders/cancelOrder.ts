@@ -12,7 +12,7 @@ export function cancelOrder(userId: string, orderId: string) {
   }
 
   if (order.status === "filled") {
-    throw new Error("cannot cancel filled order");
+    throw new Error("filled orders cannot be cancelled");
   }
 
   if (order.status === "cancelled") {
@@ -60,5 +60,7 @@ export function cancelOrder(userId: string, orderId: string) {
   return {
     orderId,
     status: "cancelled",
+    qty: order.qty,
+    filledQty: order.filledQty,
   };
 }
