@@ -47,9 +47,9 @@ export function handleLimitOrder(input: CreateOrderInput) {
 
   ORDERS.set(orderId, order);
 
-  console.log("ORDERBOOKS", ORDERBOOKS);
-  console.log("ORDERS", ORDERS);
-  console.log("BALANCES", BALANCES);
+  // console.log("ORDERBOOKS", ORDERBOOKS);
+  // console.log("ORDERS", ORDERS);
+  // console.log("BALANCES", BALANCES);
 
   return {
     status: order.status,
