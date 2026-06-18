@@ -52,10 +52,8 @@ export function handleLimitOrder(input: CreateOrderInput) {
   console.log("BALANCES", BALANCES);
 
   return {
-    orderId,
     status: order.status,
     filledQty: order.filledQty,
-    remainingQty,
     averagePrice,
     fills,
   };
