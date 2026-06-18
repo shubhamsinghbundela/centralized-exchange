@@ -4,6 +4,7 @@ import { env } from "./utils/env.js";
 import { handleDeposit } from "./deposits/deposit.js";
 import { handleCreateOrder } from "./orders/handleCreateOrder.js";
 import { getDepth } from "./depth/getDepth.js";
+import { getUserBalance } from "./balance/getUserBalance.js";
 
 export type EngineCommandType =
   | "deposit"
@@ -92,6 +93,14 @@ function handleEngineRequest(message: EngineRequest): unknown {
     const { symbol } = message.payload as { symbol: string };
 
     return getDepth(symbol);
+  }
+
+  if (message.type === "get_user_balance") {
+    const { userId } = message.payload as {
+      userId: string;
+    };
+
+    return getUserBalance(userId);
   }
 
   throw new Error("TODO(student): implement this engine request type");
