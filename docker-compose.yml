@@ -1,0 +1,16 @@
+services:
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis-stack
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    volumes:
+      - redis-data:/data
+    command: >
+      redis-server
+      --save 60 5
+      --dbfilename dump.rdb
+
+volumes:
+  redis-data:

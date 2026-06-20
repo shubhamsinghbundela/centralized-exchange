@@ -7,6 +7,8 @@ import { getDepth } from "./depth/getDepth.js";
 import { getUserBalance } from "./balance/getUserBalance.js";
 import { getOrder } from "./orders/getOrder.js";
 import { cancelOrder } from "./orders/cancelOrder.js";
+import { persistEngineState } from "./snapshot/persistence.js";
+import { loadEngineState } from "./snapshot/loadEngineState.js";
 
 export type EngineCommandType =
   | "deposit"
@@ -46,6 +48,8 @@ const responseClient = createClient({ url: env.redisUrl }).on(
 
 await Promise.all([brokerClient.connect(), responseClient.connect()]);
 
+await loadEngineState();
+
 // :-)) I added this just to check the flow, remove it when you start
 const DUMMY_SELL_ORDER = {
   orderId: "dummy-sell-order-1",
@@ -59,6 +63,22 @@ const DUMMY_SELL_ORDER = {
   status: "open",
 };
 
+let mutationCount = 0;
+
+async function snapshotIfNeeded() {
+  mutationCount++;
+
+  if (mutationCount % 5 === 0) {
+    console.log("Persisting engine state...");
+
+    await persistEngineState();
+
+    await brokerClient.sendCommand(["BGSAVE"]);
+
+    console.log("RDB snapshot created");
+  }
+}
+
 async function sendResponse(
   responseQueue: string,
   response: EngineResponse,
@@ -66,7 +86,7 @@ async function sendResponse(
   await responseClient.lPush(responseQueue, JSON.stringify(response));
 }
 
-function handleEngineRequest(message: EngineRequest): unknown {
+async function handleEngineRequest(message: EngineRequest): Promise<unknown> {
   /**
    * TODO(student):
    * 1. Check _message.type.
@@ -84,11 +104,19 @@ function handleEngineRequest(message: EngineRequest): unknown {
 
   // just checking the flow, remove this when you start implementing the logic
   if (message.type === "create_order") {
-    return handleCreateOrder(message.payload);
+    const result = handleCreateOrder(message.payload);
+
+    await snapshotIfNeeded();
+
+    return result;
   }
 
   if (message.type === "deposit") {
-    return handleDeposit(message.payload);
+    const result = handleDeposit(message.payload);
+
+    await snapshotIfNeeded();
+
+    return result;
   }
 
   if (message.type === "get_depth") {
@@ -120,7 +148,11 @@ function handleEngineRequest(message: EngineRequest): unknown {
       orderId: string;
     };
 
-    return cancelOrder(userId, orderId);
+    const result = cancelOrder(userId, orderId);
+
+    await snapshotIfNeeded();
+
+    return result;
   }
 
   throw new Error("TODO(student): implement this engine request type");
@@ -142,7 +174,7 @@ for (;;) {
   }
 
   try {
-    const data = handleEngineRequest(message);
+    const data = await handleEngineRequest(message);
     await sendResponse(message.responseQueue, {
       correlationId: message.correlationId,
       ok: true,
