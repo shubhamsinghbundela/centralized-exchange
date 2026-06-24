@@ -1,10 +1,12 @@
+import type Decimal from "decimal.js";
+
 export type Side = "buy" | "sell";
 export type OrderType = "market" | "limit";
 export type OrderStatus = "open" | "partially_filled" | "filled" | "cancelled";
 
 export interface Balance {
-  available: number;
-  locked: number;
+  available: Decimal;
+  locked: Decimal;
 }
 
 export interface RestingOrder {

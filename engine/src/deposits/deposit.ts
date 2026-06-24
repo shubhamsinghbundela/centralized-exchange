@@ -1,5 +1,4 @@
-// handlers/deposit.ts
-
+import Decimal from "decimal.js";
 import { BALANCES } from "../store/exchange-store.js";
 
 export function handleDeposit(payload: Record<string, unknown>) {
@@ -15,17 +14,20 @@ export function handleDeposit(payload: Record<string, unknown>) {
   }
 
   const balance = balances[asset] ?? {
-    available: 0,
-    locked: 0,
+    available: new Decimal(0),
+    locked: new Decimal(0),
   };
 
-  balance.available += amount;
+  balance.available = new Decimal(balance.available).plus(amount);
 
   balances[asset] = balance;
 
   return {
     userId,
     asset,
-    balance,
+    balance: {
+      available: balance.available.toString(),
+      locked: balance.locked.toString(),
+    },
   };
 }
