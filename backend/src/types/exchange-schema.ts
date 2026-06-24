@@ -27,5 +27,8 @@ export const orderBodySchema = z.discriminatedUnion("type", [
 
 export const depositSchema = z.object({
   asset: z.string().trim().min(1, "asset is required"),
-  amount: z.number().positive("amount must be positive"),
+  amount: z
+    .string()
+    .trim()
+    .regex(/^\d+(\.\d+)?$/, "Invalid Asset Amount"),
 });

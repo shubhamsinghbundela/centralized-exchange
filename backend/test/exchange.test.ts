@@ -22,7 +22,7 @@ describe("Deposit API", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({
         asset: "USD",
-        amount: 1000,
+        amount: "1000",
       });
 
     expect(depositResponse.status).toBe(200);
@@ -31,8 +31,8 @@ describe("Deposit API", () => {
       userId: signupResponse.body.userId,
       asset: "USD",
       balance: {
-        available: 1000,
-        locked: 0,
+        available: "1000",
+        locked: "0",
       },
     });
   });
@@ -52,7 +52,7 @@ describe("Deposit API", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({
         asset: "USD",
-        amount: 1000,
+        amount: "1000",
       });
 
     const response = await request(app)
@@ -60,14 +60,14 @@ describe("Deposit API", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({
         asset: "USD",
-        amount: 500,
+        amount: "500",
       });
 
     expect(response.status).toBe(200);
 
     expect(response.body.balance).toEqual({
-      available: 1500,
-      locked: 0,
+      available: "1500",
+      locked: "0",
     });
   });
 
@@ -86,7 +86,7 @@ describe("Deposit API", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({
         asset: "",
-        amount: -100,
+        amount: "-100",
       });
 
     expect(response.status).toBe(400);
@@ -95,7 +95,7 @@ describe("Deposit API", () => {
   test("should reject unauthenticated requests", async () => {
     const response = await request(app).post("/deposit").send({
       asset: "USD",
-      amount: 1000,
+      amount: "1000",
     });
 
     expect(response.status).toBe(401);
