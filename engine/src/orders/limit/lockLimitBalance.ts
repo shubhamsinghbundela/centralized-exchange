@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import type { CreateOrderInput } from "../../store/exchange-store";
 import { getBalance } from "../../utils/getBalance";
 
@@ -15,23 +16,25 @@ export function lockLimitBalance(input: CreateOrderInput) {
     // Total required = 80 * 2 = $160
     const usdBalance = getBalance(input.userId, "USD");
 
-    const requiredAmount = input.price! * input.qty;
+    const requiredAmount = new Decimal(input.price!).mul(input.qty);
 
-    if (usdBalance.available < requiredAmount) {
+    if (usdBalance.available.lt(requiredAmount)) {
       throw new Error("Insufficient USD balance");
     }
 
-    usdBalance.available -= requiredAmount;
-    usdBalance.locked += requiredAmount;
+    usdBalance.available = usdBalance.available.minus(requiredAmount);
+    usdBalance.locked = usdBalance.locked.plus(requiredAmount);
   } else {
     // Seller must own enough of the asset being sold.
     const assetBalance = getBalance(input.userId, input.symbol);
 
-    if (assetBalance.available < input.qty) {
+    const qty = new Decimal(input.qty);
+
+    if (assetBalance.available.lt(qty)) {
       throw new Error(`Insufficient ${input.symbol} balance`);
     }
 
-    assetBalance.available -= input.qty;
-    assetBalance.locked += input.qty;
+    assetBalance.available = assetBalance.available.minus(qty);
+    assetBalance.locked = assetBalance.locked.plus(qty);
   }
 }

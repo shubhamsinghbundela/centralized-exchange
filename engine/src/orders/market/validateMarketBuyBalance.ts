@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import type { CreateOrderInput } from "../../store/exchange-store";
 import { getBalance } from "../../utils/getBalance";
 import { getOrderBook } from "../../utils/getOrderBook";
@@ -16,7 +17,7 @@ export function validateMarketBuyBalance(input: CreateOrderInput) {
   const book = getOrderBook(input.symbol);
 
   let remainingQty = input.qty;
-  let requiredUsd = 0;
+  let requiredUsd = new Decimal(0);
 
   // Market buy consumes cheapest asks first
   const prices = [...book.asks.keys()].sort((a, b) => a - b);
@@ -41,7 +42,7 @@ export function validateMarketBuyBalance(input: CreateOrderInput) {
 
       const matchedQty = Math.min(remainingQty, availableQty);
 
-      requiredUsd += matchedQty * price;
+      requiredUsd = requiredUsd.plus(new Decimal(matchedQty).mul(price));
 
       remainingQty -= matchedQty;
     }
@@ -52,7 +53,7 @@ export function validateMarketBuyBalance(input: CreateOrderInput) {
   }
 
   // Ensure the user has enough USD to execute the market buy.
-  if (usdBalance.available < requiredUsd) {
+  if (usdBalance.available.lt(requiredUsd)) {
     throw new Error("Insufficient USD balance");
   }
 }

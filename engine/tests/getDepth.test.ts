@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test } from "bun:test";
 import { BALANCES, ORDERBOOKS, ORDERS } from "../src/store/exchange-store";
 import { getDepth } from "../src/depth/getDepth";
 import { handleLimitOrder } from "../src/orders/handleLimitOrder";
+import Decimal from "decimal.js";
 
 describe("Order Book Depth", () => {
   beforeEach(() => {
@@ -24,8 +25,8 @@ describe("Order Book Depth", () => {
   test("should return bids sorted from highest price to lowest price", () => {
     BALANCES.set("buyer", {
       USD: {
-        available: 10000,
-        locked: 0,
+        available: new Decimal(10000),
+        locked: new Decimal(0),
       },
     });
 
@@ -79,8 +80,8 @@ describe("Order Book Depth", () => {
   test("should return asks sorted from lowest price to highest price", () => {
     BALANCES.set("seller", {
       BTC: {
-        available: 20,
-        locked: 0,
+        available: new Decimal(20),
+        locked: new Decimal(0),
       },
     });
 
@@ -134,8 +135,8 @@ describe("Order Book Depth", () => {
   test("should aggregate orders at the same bid price level", () => {
     BALANCES.set("buyer", {
       USD: {
-        available: 5000,
-        locked: 0,
+        available: new Decimal(5000),
+        locked: new Decimal(0),
       },
     });
 
@@ -172,15 +173,15 @@ describe("Order Book Depth", () => {
   test("should not include fully filled orders in depth", () => {
     BALANCES.set("seller", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 

@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {
   FILLS,
   type CreateOrderInput,
@@ -21,8 +22,8 @@ export function matchMarketOrder(input: CreateOrderInput) {
   // Quantity still waiting to be matched.
   let remainingQty = input.qty;
 
-  let totalTradedValue = 0;
-  let totalFilledQty = 0;
+  let totalTradedValue = new Decimal(0);
+  let totalFilledQty = new Decimal(0);
 
   // All fills generated during matching.
   const fills: Fill[] = [];
@@ -68,8 +69,11 @@ export function matchMarketOrder(input: CreateOrderInput) {
       // Reduce remaining quantity of incoming order.
       remainingQty -= matchedQty;
 
-      totalFilledQty += matchedQty;
-      totalTradedValue += matchedQty * price;
+      totalFilledQty = totalFilledQty.plus(matchedQty);
+
+      totalTradedValue = totalTradedValue.plus(
+        new Decimal(matchedQty).mul(price),
+      );
 
       // Increase filled quantity of resting order.
       restingOrder.filledQty += matchedQty;
@@ -130,6 +134,8 @@ export function matchMarketOrder(input: CreateOrderInput) {
   return {
     remainingQty,
     fills,
-    averagePrice: totalFilledQty > 0 ? totalTradedValue / totalFilledQty : null,
+    averagePrice: totalFilledQty.gt(0)
+      ? totalTradedValue.div(totalFilledQty).toNumber()
+      : null,
   };
 }

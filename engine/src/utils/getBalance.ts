@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { BALANCES, type Balance } from "../store/exchange-store";
 
 export function getBalance(userId: string, asset: string) {
@@ -10,8 +11,8 @@ export function getBalance(userId: string, asset: string) {
 
   if (!balances[asset]) {
     balances[asset] = {
-      available: 0,
-      locked: 0,
+      available: new Decimal(0),
+      locked: new Decimal(0),
     };
   }
 

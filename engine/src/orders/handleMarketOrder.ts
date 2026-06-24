@@ -52,8 +52,9 @@ export function handleMarketOrder(input: CreateOrderInput) {
   if (input.side === "sell" && remainingQty > 0) {
     const assetBalance = getBalance(input.userId, input.symbol);
 
-    assetBalance.locked -= remainingQty;
-    assetBalance.available += remainingQty;
+    assetBalance.locked = assetBalance.locked.minus(remainingQty);
+
+    assetBalance.available = assetBalance.available.plus(remainingQty);
   }
 
   return {

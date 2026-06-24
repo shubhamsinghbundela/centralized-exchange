@@ -3,6 +3,7 @@ import { BALANCES, ORDERBOOKS, ORDERS } from "../src/store/exchange-store";
 
 import { handleLimitOrder } from "../src/orders/handleLimitOrder";
 import { handleMarketOrder } from "../src/orders/handleMarketOrder";
+import Decimal from "decimal.js";
 
 describe("Market Order Matching", () => {
   beforeEach(() => {
@@ -15,16 +16,16 @@ describe("Market Order Matching", () => {
     // Seller has BTC
     BALANCES.set("seller", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
     // Buyer has USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -66,16 +67,16 @@ describe("Market Order Matching", () => {
     // Seller has only 2 BTC
     BALANCES.set("seller", {
       BTC: {
-        available: 2,
-        locked: 0,
+        available: new Decimal(2),
+        locked: new Decimal(0),
       },
     });
 
     // Buyer has enough USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -117,8 +118,8 @@ describe("Market Order Matching", () => {
     // Buyer has enough USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 

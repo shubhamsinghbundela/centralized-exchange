@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import type {
   CreateOrderInput,
   RestingOrder,
@@ -15,6 +16,8 @@ export function settleMarketTrade({
   matchedQty: number;
   price: number;
 }) {
+  const tradeValue = new Decimal(matchedQty).mul(price);
+
   if (input.side === "buy") {
     const buyerStock = getBalance(input.userId, input.symbol);
     const buyerUsd = getBalance(input.userId, "USD");
@@ -22,13 +25,13 @@ export function settleMarketTrade({
     const sellerStock = getBalance(restingOrder.userId, input.symbol);
     const sellerUsd = getBalance(restingOrder.userId, "USD");
 
-    buyerStock.available += matchedQty;
+    buyerStock.available = buyerStock.available.plus(matchedQty);
 
-    buyerUsd.available -= matchedQty * price;
+    buyerUsd.available = buyerUsd.available.minus(tradeValue);
 
-    sellerStock.locked -= matchedQty;
+    sellerStock.locked = sellerStock.locked.minus(matchedQty);
 
-    sellerUsd.available += matchedQty * price;
+    sellerUsd.available = sellerUsd.available.plus(tradeValue);
   } else {
     const sellerUsd = getBalance(input.userId, "USD");
     const sellerStock = getBalance(input.userId, input.symbol);
@@ -36,12 +39,12 @@ export function settleMarketTrade({
     const buyerStock = getBalance(restingOrder.userId, input.symbol);
     const buyerUsd = getBalance(restingOrder.userId, "USD");
 
-    sellerStock.available -= matchedQty;
+    sellerStock.available = sellerStock.available.minus(matchedQty);
 
-    sellerUsd.available += matchedQty * price;
+    sellerUsd.available = sellerUsd.available.plus(tradeValue);
 
-    buyerUsd.locked -= matchedQty * price;
+    buyerUsd.locked = buyerUsd.locked.minus(tradeValue);
 
-    buyerStock.available += matchedQty;
+    buyerStock.available = buyerStock.available.plus(matchedQty);
   }
 }

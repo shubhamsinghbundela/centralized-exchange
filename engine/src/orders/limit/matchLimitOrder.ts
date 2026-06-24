@@ -8,6 +8,7 @@ import { createFill } from "../shared/createFill";
 import { removeFilledOrders } from "../shared/removeFilledOrders";
 import { settleLimitTrade } from "./settleLimitTrade";
 import { updateMakerOrder } from "../shared/updateMakerOrder";
+import Decimal from "decimal.js";
 
 /**
  * Match an incoming limit order against
@@ -21,8 +22,8 @@ export function matchLimitOrder({
   input: CreateOrderInput;
   orderId: string;
 }) {
-  let totalTradedValue = 0;
-  let totalFilledQty = 0;
+  let totalTradedValue = new Decimal(0);
+  let totalFilledQty = new Decimal(0);
   // Get Order Book
   const book = getOrderBook(input.symbol);
 
@@ -118,8 +119,10 @@ export function matchLimitOrder({
         fill,
       });
 
-      totalTradedValue += matchedQty * price;
-      totalFilledQty += matchedQty;
+      totalTradedValue = totalTradedValue.plus(
+        new Decimal(matchedQty).mul(price),
+      );
+      totalFilledQty = totalFilledQty.plus(matchedQty);
 
       // Balance Settlement after match
       settleLimitTrade({
@@ -141,6 +144,8 @@ export function matchLimitOrder({
   return {
     remainingQty,
     fills,
-    averagePrice: totalFilledQty > 0 ? totalTradedValue / totalFilledQty : null,
+    averagePrice: totalFilledQty.gt(0)
+      ? totalTradedValue.div(totalFilledQty).toNumber()
+      : null,
   };
 }

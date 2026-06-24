@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, test } from "bun:test";
 import { BALANCES, ORDERBOOKS, ORDERS } from "../src/store/exchange-store";
 
 import { handleLimitOrder } from "../src/orders/handleLimitOrder";
+import Decimal from "decimal.js";
 
 describe("Limit Order Matching", () => {
   beforeEach(() => {
@@ -14,16 +15,16 @@ describe("Limit Order Matching", () => {
     // Seller has BTC
     BALANCES.set("seller", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
     // Buyer has USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -57,16 +58,16 @@ describe("Limit Order Matching", () => {
     // Seller has BTC
     BALANCES.set("seller", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
     // Buyer has USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -106,16 +107,16 @@ describe("Limit Order Matching", () => {
     // Seller owns 5 BTC
     BALANCES.set("seller", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
     // Buyer has enough USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -153,26 +154,26 @@ describe("Limit Order Matching", () => {
     });
 
     // Seller receives USD
-    expect(BALANCES.get("seller")?.USD?.available).toBe(500);
+    expect(BALANCES.get("seller")?.USD?.available.toNumber()).toBe(500);
 
     // Buyer receives BTC
-    expect(BALANCES.get("buyer")?.BTC?.available).toBe(5);
+    expect(BALANCES.get("buyer")?.BTC?.available.toNumber()).toBe(5);
   });
 
   test("limit sell order should remain open when sell price is above best bid", () => {
     // Buyer owns USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
     // Seller owns BTC
     BALANCES.set("seller", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
@@ -206,16 +207,16 @@ describe("Limit Order Matching", () => {
     // Buyer owns USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
     // Seller owns BTC
     BALANCES.set("seller", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
@@ -257,16 +258,16 @@ describe("Limit Order Matching", () => {
     // Seller owns 3 BTC
     BALANCES.set("seller", {
       BTC: {
-        available: 3,
-        locked: 0,
+        available: new Decimal(3),
+        locked: new Decimal(0),
       },
     });
 
     // Buyer has enough USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -313,30 +314,30 @@ describe("Limit Order Matching", () => {
     // Setup sellers
     BALANCES.set("seller1", {
       BTC: {
-        available: 2,
-        locked: 0,
+        available: new Decimal(2),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("seller2", {
       BTC: {
-        available: 3,
-        locked: 0,
+        available: new Decimal(3),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("seller3", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
     // Buyer has enough USD
     BALANCES.set("buyer", {
       USD: {
-        available: 1200,
-        locked: 0,
+        available: new Decimal(1200),
+        locked: new Decimal(0),
       },
     });
 
@@ -408,42 +409,42 @@ describe("Limit Order Matching", () => {
     expect(book?.bids).toHaveLength(0);
 
     // Buyer received 10 BTC
-    expect(BALANCES.get("buyer")?.BTC?.available).toBe(10);
+    expect(BALANCES.get("buyer")?.BTC?.available.toNumber()).toBe(10);
 
     // Sellers received USD
-    expect(BALANCES.get("seller1")?.USD?.available).toBe(200);
-    expect(BALANCES.get("seller2")?.USD?.available).toBe(330);
-    expect(BALANCES.get("seller3")?.USD?.available).toBe(600);
+    expect(BALANCES.get("seller1")?.USD?.available.toNumber()).toBe(200);
+    expect(BALANCES.get("seller2")?.USD?.available.toNumber()).toBe(330);
+    expect(BALANCES.get("seller3")?.USD?.available.toNumber()).toBe(600);
   });
 
   test("limit buy order should not cross above allowed price", () => {
     // Setup sellers
     BALANCES.set("seller1", {
       BTC: {
-        available: 2,
-        locked: 0,
+        available: new Decimal(2),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("seller2", {
       BTC: {
-        available: 3,
-        locked: 0,
+        available: new Decimal(3),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("seller3", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
     // Buyer has enough USD
     BALANCES.set("buyer", {
       USD: {
-        available: 2000,
-        locked: 0,
+        available: new Decimal(2000),
+        locked: new Decimal(0),
       },
     });
 
@@ -512,38 +513,38 @@ describe("Limit Order Matching", () => {
     expect(book?.bids).toHaveLength(1);
 
     // Buyer receives 5 BTC
-    expect(BALANCES.get("buyer")?.BTC?.available).toBe(5);
+    expect(BALANCES.get("buyer")?.BTC?.available.toNumber()).toBe(5);
 
     // Sellers receive USD
-    expect(BALANCES.get("seller1")?.USD?.available).toBe(200);
-    expect(BALANCES.get("seller2")?.USD?.available).toBe(330);
+    expect(BALANCES.get("seller1")?.USD?.available.toNumber()).toBe(200);
+    expect(BALANCES.get("seller2")?.USD?.available.toNumber()).toBe(330);
 
     // Seller3 should still have 5 BTC locked in the resting ask
     expect(BALANCES.get("seller3")?.BTC).toEqual({
-      available: 0,
-      locked: 5,
+      available: new Decimal(0),
+      locked: new Decimal(5),
     });
   });
 
   test("orders at same price should match in FIFO order", () => {
     BALANCES.set("seller1", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("seller2", {
       BTC: {
-        available: 5,
-        locked: 0,
+        available: new Decimal(5),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("buyer", {
       USD: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
