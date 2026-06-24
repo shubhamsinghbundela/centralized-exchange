@@ -16,7 +16,7 @@ export function setup() {
       `${BASE_URL}/deposit`,
       JSON.stringify({
         asset: "USD",
-        amount: 1000000,
+        amount: "1000000",
       }),
       { headers },
     );
@@ -29,7 +29,7 @@ export function setup() {
       `${BASE_URL}/deposit`,
       JSON.stringify({
         asset: "BTC",
-        amount: 1000,
+        amount: "1000",
       }),
       { headers },
     );
