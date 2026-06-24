@@ -48,7 +48,7 @@ const responseClient = createClient({ url: env.redisUrl }).on(
 
 await Promise.all([brokerClient.connect(), responseClient.connect()]);
 
-await loadEngineState();
+// await loadEngineState();
 
 // :-)) I added this just to check the flow, remove it when you start
 const DUMMY_SELL_ORDER = {
@@ -66,17 +66,13 @@ const DUMMY_SELL_ORDER = {
 let mutationCount = 0;
 
 async function snapshotIfNeeded() {
-  mutationCount++;
-
-  if (mutationCount % 5 === 0) {
-    console.log("Persisting engine state...");
-
-    await persistEngineState();
-
-    await brokerClient.sendCommand(["BGSAVE"]);
-
-    console.log("RDB snapshot created");
-  }
+  // mutationCount++;
+  // if (mutationCount % 5 === 0) {
+  //   console.log("Persisting engine state...");
+  //   await persistEngineState();
+  //   await brokerClient.sendCommand(["BGSAVE"]);
+  //   console.log("RDB snapshot created");
+  // }
 }
 
 async function sendResponse(
@@ -106,7 +102,7 @@ async function handleEngineRequest(message: EngineRequest): Promise<unknown> {
   if (message.type === "create_order") {
     const result = handleCreateOrder(message.payload);
 
-    await snapshotIfNeeded();
+    // await snapshotIfNeeded();
 
     return result;
   }
@@ -114,7 +110,7 @@ async function handleEngineRequest(message: EngineRequest): Promise<unknown> {
   if (message.type === "deposit") {
     const result = handleDeposit(message.payload);
 
-    await snapshotIfNeeded();
+    // await snapshotIfNeeded();
 
     return result;
   }
@@ -150,7 +146,7 @@ async function handleEngineRequest(message: EngineRequest): Promise<unknown> {
 
     const result = cancelOrder(userId, orderId);
 
-    await snapshotIfNeeded();
+    // await snapshotIfNeeded();
 
     return result;
   }
