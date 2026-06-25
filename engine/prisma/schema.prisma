@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Order {
+  orderId String @id
+
+  userId String
+  side   String
+  type   String
+  symbol String
+  price  Decimal
+  qty    Decimal
+  filledQty Decimal
+  status String
+  createdAt DateTime
+
+  buyFills  Fill[] @relation("BuyOrder")
+  sellFills Fill[] @relation("SellOrder")
+}
+
+model Fill {
+  fillId String @id
+
+  symbol String
+  price  Decimal
+  qty    Decimal
+
+  buyOrderId  String
+  sellOrderId String
+
+  createdAt DateTime
+
+  buyOrder  Order @relation("BuyOrder", fields: [buyOrderId], references: [orderId])
+  sellOrder Order @relation("SellOrder", fields: [sellOrderId], references: [orderId])
+}
