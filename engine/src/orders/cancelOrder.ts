@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { BALANCES, ORDERBOOKS, ORDERS } from "../store/exchange-store";
 
 export function cancelOrder(userId: string, orderId: string) {
@@ -36,14 +37,14 @@ export function cancelOrder(userId: string, orderId: string) {
     }
   }
   // unlock balances
-  const remainingQty = order.qty - order.filledQty;
+  const remainingQty = new Decimal(order.qty).minus(order.filledQty);
   const balances = BALANCES.get(userId)!;
 
   if (order.side === "buy") {
-    const refund = remainingQty * order.price!;
+    const refund = remainingQty.times(order.price!);
 
-    balances.USD!.locked -= refund;
-    balances.USD!.available += refund;
+    balances.USD!.locked = balances.USD!.locked.minus(refund);
+    balances.USD!.available = balances.USD!.available.plus(refund);
   } else {
     const assetBalance = balances[order.symbol];
 
@@ -51,8 +52,8 @@ export function cancelOrder(userId: string, orderId: string) {
       throw new Error(`${order.symbol} balance not found`);
     }
 
-    assetBalance.locked -= remainingQty;
-    assetBalance.available += remainingQty;
+    assetBalance.locked = assetBalance.locked.minus(remainingQty);
+    assetBalance.available = assetBalance.available.plus(remainingQty);
   }
 
   order.status = "cancelled";

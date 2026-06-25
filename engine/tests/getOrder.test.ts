@@ -4,6 +4,7 @@ import { BALANCES, ORDERBOOKS, ORDERS } from "../src/store/exchange-store";
 
 import { handleLimitOrder } from "../src/orders/handleLimitOrder";
 import { getOrder } from "../src/orders/getOrder";
+import Decimal from "decimal.js";
 
 describe("Get Order", () => {
   beforeEach(() => {
@@ -15,8 +16,8 @@ describe("Get Order", () => {
   test("should return an open order", () => {
     BALANCES.set("buyer", {
       USD: {
-        available: 1_000_000,
-        locked: 0,
+        available: new Decimal(1_000_000),
+        locked: new Decimal(0),
       },
     });
 
@@ -46,15 +47,15 @@ describe("Get Order", () => {
   test("should return a partially filled order", () => {
     BALANCES.set("buyer", {
       USD: {
-        available: 1000000,
-        locked: 0,
+        available: new Decimal(1000000),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("seller", {
       BTC: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -100,15 +101,15 @@ describe("Get Order", () => {
   test("should return a filled order", () => {
     BALANCES.set("buyer", {
       USD: {
-        available: 1000000,
-        locked: 0,
+        available: new Decimal(1000000),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("seller", {
       BTC: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -161,8 +162,8 @@ describe("Get Order", () => {
   test("should not allow a user to read another user's order", () => {
     BALANCES.set("seller", {
       BTC: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 

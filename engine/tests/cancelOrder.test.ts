@@ -4,6 +4,7 @@ import { BALANCES, ORDERBOOKS, ORDERS } from "../src/store/exchange-store";
 
 import { handleLimitOrder } from "../src/orders/handleLimitOrder";
 import { cancelOrder } from "../src/orders/cancelOrder";
+import Decimal from "decimal.js";
 
 describe("Cancel Order", () => {
   beforeEach(() => {
@@ -15,8 +16,8 @@ describe("Cancel Order", () => {
   test("should cancel an open limit order", () => {
     BALANCES.set("buyer", {
       USD: {
-        available: 1000000,
-        locked: 0,
+        available: new Decimal(1000000),
+        locked: new Decimal(0),
       },
     });
 
@@ -54,15 +55,15 @@ describe("Cancel Order", () => {
   test("should cancel a partially filled order", () => {
     BALANCES.set("buyer", {
       USD: {
-        available: 1_000_000,
-        locked: 0,
+        available: new Decimal(1_000_000),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("seller", {
       BTC: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -119,15 +120,15 @@ describe("Cancel Order", () => {
   test("should not allow cancelling a filled order", () => {
     BALANCES.set("buyer", {
       USD: {
-        available: 1000000,
-        locked: 0,
+        available: new Decimal(1000000),
+        locked: new Decimal(0),
       },
     });
 
     BALANCES.set("seller", {
       BTC: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
@@ -168,8 +169,8 @@ describe("Cancel Order", () => {
   test("should not allow cancelling an already cancelled order", () => {
     BALANCES.set("buyer", {
       USD: {
-        available: 1_000_000,
-        locked: 0,
+        available: new Decimal(1_000_000),
+        locked: new Decimal(0),
       },
     });
 
@@ -213,8 +214,8 @@ describe("Cancel Order", () => {
   test("should not allow a user to cancel another user's order", () => {
     BALANCES.set("seller", {
       BTC: {
-        available: 1000,
-        locked: 0,
+        available: new Decimal(1000),
+        locked: new Decimal(0),
       },
     });
 
