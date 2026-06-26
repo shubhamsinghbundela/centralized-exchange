@@ -19,6 +19,7 @@
     "@prisma/client": "^7.8.0",
     "decimal.js": "^10.6.0",
     "dotenv": "^17.4.2",
+    "node-cron": "^4.5.0",
     "pg": "^8.22.0",
     "redis": "^5.12.1"
   }

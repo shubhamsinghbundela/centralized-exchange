@@ -1,14 +1,15 @@
 import "dotenv/config";
 import { createClient } from "redis";
-import { env } from "./utils/env.js";
-import { handleDeposit } from "./deposits/deposit.js";
-import { handleCreateOrder } from "./orders/handleCreateOrder.js";
-import { getDepth } from "./depth/getDepth.js";
-import { getUserBalance } from "./balance/getUserBalance.js";
-import { getOrder } from "./orders/getOrder.js";
-import { cancelOrder } from "./orders/cancelOrder.js";
-import { persistEngineState } from "./snapshot/persistence.js";
-import { loadEngineState } from "./snapshot/loadEngineState.js";
+import { env } from "./utils/env.ts";
+import { handleDeposit } from "./deposits/deposit.ts";
+import { handleCreateOrder } from "./orders/handleCreateOrder.ts";
+import { getDepth } from "./depth/getDepth.ts";
+import { getUserBalance } from "./balance/getUserBalance.ts";
+import { getOrder } from "./orders/getOrder.ts";
+import { cancelOrder } from "./orders/cancelOrder.ts";
+import { persistEngineState } from "./snapshot/persistence.ts";
+import { loadEngineState } from "./snapshot/loadEngineState.ts";
+import "../src/market/marketCron.ts";
 
 export type EngineCommandType =
   | "deposit"
