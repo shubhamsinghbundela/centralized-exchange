@@ -19,7 +19,7 @@ model Order {
   side   String
   type   String
   symbol String
-  price  Decimal
+  price  Decimal? 
   qty    Decimal
   filledQty Decimal
   status String
