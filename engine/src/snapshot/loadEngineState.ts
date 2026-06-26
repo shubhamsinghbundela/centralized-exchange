@@ -3,9 +3,11 @@ import {
   ORDERBOOKS,
   ORDERS,
   FILLS,
+  type Balance,
 } from "../store/exchange-store.js";
 import { createClient } from "redis";
 import { env } from "../utils/env.js";
+import Decimal from "decimal.js";
 
 const redis = createClient({
   url: env.redisUrl,
@@ -22,8 +24,19 @@ export async function loadEngineState() {
   if (balances) {
     BALANCES.clear();
 
-    Object.entries(JSON.parse(balances)).forEach(([userId, balance]) => {
-      BALANCES.set(userId, balance as any);
+    Object.entries(JSON.parse(balances)).forEach(([userId, assets]) => {
+      const restoredBalances: Record<string, Balance> = {};
+
+      for (const [asset, balance] of Object.entries(
+        assets as Record<string, any>,
+      )) {
+        restoredBalances[asset] = {
+          available: new Decimal(balance.available),
+          locked: new Decimal(balance.locked),
+        };
+      }
+
+      BALANCES.set(userId, restoredBalances);
     });
   }
 
