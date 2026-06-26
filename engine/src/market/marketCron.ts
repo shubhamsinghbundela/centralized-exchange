@@ -1,8 +1,9 @@
 import cron from "node-cron";
 import { handleMarketClose } from "../sync/handleMarketClose.js";
+import { env } from "../utils/env.js";
 
 cron.schedule(
-  "30 15 * * 1-5",
+  env.marketCloseTime,
   async () => {
     console.log("Market closed. Starting sync...");
 
@@ -13,7 +14,7 @@ cron.schedule(
     }
   },
   {
-    timezone: "Asia/Kolkata",
+    timezone: env.marketTimezone,
   },
 );
 
