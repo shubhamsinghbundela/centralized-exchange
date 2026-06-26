@@ -1,14 +1,12 @@
-import { prisma } from "../db.js";
+import { prisma } from "../db.ts";
 import { syncOrders } from "./syncOrders.js";
 import { syncFills } from "./syncFills.js";
 
 export async function handleMarketClose() {
   console.log("Market closed");
 
-  await prisma.$transaction(async (tx) => {
-    await syncOrders(tx);
-    await syncFills(tx);
-  });
+  await syncOrders(prisma);
+  await syncFills(prisma);
 
   console.log("Market data synced successfully");
 }
