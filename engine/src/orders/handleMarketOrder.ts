@@ -3,11 +3,13 @@ import {
   ORDERBOOKS,
   ORDERS,
   type CreateOrderInput,
+  type DepthDelta,
   type OrderRecord,
 } from "../store/exchange-store";
 import { validateAndLockMarketBalance } from "./market/validateAndLockMarketBalance";
 import { matchMarketOrder } from "./market/matchMarketOrder";
 import { getBalance } from "../utils/getBalance";
+import { buildDepthUpdate } from "./shared/buildDepthUpdate";
 
 export function handleMarketOrder(input: CreateOrderInput) {
   // Validates that the user has sufficient balance for a market order
@@ -31,8 +33,16 @@ export function handleMarketOrder(input: CreateOrderInput) {
     createdAt: Date.now(),
   };
 
+  const depthDelta: DepthDelta = {
+    bids: new Set(),
+    asks: new Set(),
+  };
+
   // Match Incoming Order
-  const { remainingQty, fills, averagePrice } = matchMarketOrder(input);
+  const { remainingQty, fills, averagePrice } = matchMarketOrder(
+    input,
+    depthDelta,
+  );
 
   const filledQty = input.qty - remainingQty;
 
@@ -57,6 +67,8 @@ export function handleMarketOrder(input: CreateOrderInput) {
     assetBalance.available = assetBalance.available.plus(remainingQty);
   }
 
+  const depthUpdate = buildDepthUpdate(input.symbol, depthDelta);
+
   return {
     status:
       filledQty === 0
@@ -67,5 +79,6 @@ export function handleMarketOrder(input: CreateOrderInput) {
     filledQty,
     averagePrice,
     fills,
+    depthUpdate,
   };
 }

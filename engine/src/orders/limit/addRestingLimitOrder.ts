@@ -1,5 +1,6 @@
 import type {
   CreateOrderInput,
+  DepthDelta,
   RestingOrder,
 } from "../../store/exchange-store";
 import { getOrderBook } from "../../utils/getOrderBook";
@@ -13,10 +14,12 @@ export function addRestingLimitOrder({
   input,
   orderId,
   remainingQty,
+  depthDelta,
 }: {
   input: CreateOrderInput;
   orderId: string;
   remainingQty: number;
+  depthDelta: DepthDelta;
 }) {
   // Fully matched orders should not be added to the order book.
   if (remainingQty <= 0) {
@@ -50,4 +53,10 @@ export function addRestingLimitOrder({
   level?.push(restingOrder);
 
   sideMap?.set(input.price!, level);
+
+  if (input.side === "buy") {
+    depthDelta.bids.add(input.price!);
+  } else {
+    depthDelta.asks.add(input.price!);
+  }
 }

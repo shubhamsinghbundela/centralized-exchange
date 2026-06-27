@@ -69,6 +69,11 @@ export type DepthResponse = {
   lastUpdateId: number;
 };
 
+export interface DepthDelta {
+  bids: Set<number>;
+  asks: Set<number>;
+}
+
 export const BALANCES = new Map<string, Record<string, Balance>>();
 export const ORDERBOOKS = new Map<string, OrderBook>();
 export const ORDERS = new Map<string, OrderRecord>();

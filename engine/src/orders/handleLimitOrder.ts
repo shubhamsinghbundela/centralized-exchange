@@ -3,8 +3,10 @@ import {
   ORDERBOOKS,
   ORDERS,
   type CreateOrderInput,
+  type DepthDelta,
 } from "../store/exchange-store";
 import { addRestingLimitOrder } from "./limit/addRestingLimitOrder";
+import { buildDepthUpdate } from "./shared/buildDepthUpdate";
 import { createLimitOrderRecord } from "./limit/createLimitOrderRecord";
 import { lockLimitBalance } from "./limit/lockLimitBalance";
 import { matchLimitOrder } from "./limit/matchLimitOrder";
@@ -20,10 +22,16 @@ export function handleLimitOrder(input: CreateOrderInput) {
   // Create New Order Record
   const { orderId, order } = createLimitOrderRecord(input);
 
+  const depthDelta: DepthDelta = {
+    bids: new Set(),
+    asks: new Set(),
+  };
+
   // Match Incoming Order
   const { remainingQty, fills, averagePrice } = matchLimitOrder({
     input,
     orderId,
+    depthDelta,
   });
 
   // Add Remaining Quantity To Order Book
@@ -31,6 +39,7 @@ export function handleLimitOrder(input: CreateOrderInput) {
     input,
     orderId,
     remainingQty,
+    depthDelta,
   });
 
   // Update Order Record
@@ -51,11 +60,14 @@ export function handleLimitOrder(input: CreateOrderInput) {
   // console.log("ORDERS", ORDERS);
   // console.log("BALANCES", BALANCES);
 
+  const depthUpdate = buildDepthUpdate(input.symbol, depthDelta);
+
   return {
     orderId,
     status: order.status,
     filledQty: order.filledQty,
     averagePrice,
     fills,
+    depthUpdate,
   };
 }

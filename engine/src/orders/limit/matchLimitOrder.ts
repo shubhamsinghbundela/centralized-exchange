@@ -1,6 +1,7 @@
 import {
   FILLS,
   type CreateOrderInput,
+  type DepthDelta,
   type Fill,
 } from "../../store/exchange-store";
 import { getOrderBook } from "../../utils/getOrderBook";
@@ -18,9 +19,11 @@ import Decimal from "decimal.js";
 export function matchLimitOrder({
   input,
   orderId,
+  depthDelta,
 }: {
   input: CreateOrderInput;
   orderId: string;
+  depthDelta: DepthDelta;
 }) {
   let totalTradedValue = new Decimal(0);
   let totalFilledQty = new Decimal(0);
@@ -92,6 +95,15 @@ export function matchLimitOrder({
         restingOrder.filledQty === restingOrder.qty
           ? "filled"
           : "partially_filled";
+
+      // Record that this price level changed
+      if (input.side === "buy") {
+        // Incoming buy consumes asks
+        depthDelta.asks.add(price);
+      } else {
+        // Incoming sell consumes bids
+        depthDelta.bids.add(price);
+      }
 
       // create match record
       const fill = createFill({

@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import {
   FILLS,
   type CreateOrderInput,
+  type DepthDelta,
   type Fill,
 } from "../../store/exchange-store";
 import { getOrderBook } from "../../utils/getOrderBook";
@@ -15,7 +16,10 @@ import { settleMarketTrade } from "./settleMarketTrade";
  * existing orders on the opposite side
  * of the order book.
  */
-export function matchMarketOrder(input: CreateOrderInput) {
+export function matchMarketOrder(
+  input: CreateOrderInput,
+  depthDelta: DepthDelta,
+) {
   // Get Order Book
   const book = getOrderBook(input.symbol);
 
@@ -83,6 +87,12 @@ export function matchMarketOrder(input: CreateOrderInput) {
         restingOrder.filledQty === restingOrder.qty
           ? "filled"
           : "partially_filled";
+
+      if (input.side === "buy") {
+        depthDelta.asks.add(price);
+      } else {
+        depthDelta.bids.add(price);
+      }
 
       // create match record
       const fill = createFill({
