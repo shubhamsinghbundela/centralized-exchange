@@ -66,9 +66,19 @@ export type DepthResponse = {
   symbol: string;
   bids: DepthLevel[];
   asks: DepthLevel[];
+  lastUpdateId: number;
 };
 
 export const BALANCES = new Map<string, Record<string, Balance>>();
 export const ORDERBOOKS = new Map<string, OrderBook>();
 export const ORDERS = new Map<string, OrderRecord>();
 export const FILLS: Fill[] = [];
+
+export const ENGINE_STATE = {
+  lastUpdateId: 0,
+};
+
+export function nextUpdateId() {
+  ENGINE_STATE.lastUpdateId++;
+  return ENGINE_STATE.lastUpdateId;
+}

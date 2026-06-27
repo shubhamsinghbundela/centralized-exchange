@@ -1,4 +1,5 @@
 import {
+  ENGINE_STATE,
   ORDERBOOKS,
   type DepthLevel,
   type DepthResponse,
@@ -12,6 +13,7 @@ export function getDepth(symbol: string): DepthResponse {
       symbol,
       bids: [],
       asks: [],
+      lastUpdateId: ENGINE_STATE.lastUpdateId,
     };
   }
 
@@ -37,5 +39,6 @@ export function getDepth(symbol: string): DepthResponse {
     symbol,
     bids,
     asks,
+    lastUpdateId: ENGINE_STATE.lastUpdateId,
   };
 }
