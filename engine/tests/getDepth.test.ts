@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 
-import { BALANCES, ORDERBOOKS, ORDERS } from "../src/store/exchange-store";
+import {
+  BALANCES,
+  ENGINE_STATE,
+  ORDERBOOKS,
+  ORDERS,
+} from "../src/store/exchange-store";
 import { getDepth } from "../src/depth/getDepth";
 import { handleLimitOrder } from "../src/orders/handleLimitOrder";
 import Decimal from "decimal.js";
@@ -10,6 +15,7 @@ describe("Order Book Depth", () => {
     BALANCES.clear();
     ORDERBOOKS.clear();
     ORDERS.clear();
+    ENGINE_STATE.lastUpdateId = 0;
   });
 
   test("should return empty bids and asks when order book does not exist", () => {
@@ -19,6 +25,7 @@ describe("Order Book Depth", () => {
       symbol: "BTC",
       bids: [],
       asks: [],
+      lastUpdateId: ENGINE_STATE.lastUpdateId,
     });
   });
 
@@ -60,18 +67,9 @@ describe("Order Book Depth", () => {
     const depth = getDepth("BTC");
 
     expect(depth.bids).toEqual([
-      {
-        price: 120,
-        qty: 3,
-      },
-      {
-        price: 100,
-        qty: 5,
-      },
-      {
-        price: 90,
-        qty: 2,
-      },
+      ["120", "3"],
+      ["100", "5"],
+      ["90", "2"],
     ]);
 
     expect(depth.asks).toEqual([]);
@@ -115,18 +113,9 @@ describe("Order Book Depth", () => {
     const depth = getDepth("BTC");
 
     expect(depth.asks).toEqual([
-      {
-        price: 90,
-        qty: 2,
-      },
-      {
-        price: 100,
-        qty: 5,
-      },
-      {
-        price: 120,
-        qty: 3,
-      },
+      ["90", "2"],
+      ["100", "5"],
+      ["120", "3"],
     ]);
 
     expect(depth.bids).toEqual([]);
@@ -160,12 +149,7 @@ describe("Order Book Depth", () => {
 
     const depth = getDepth("BTC");
 
-    expect(depth.bids).toEqual([
-      {
-        price: 100,
-        qty: 8,
-      },
-    ]);
+    expect(depth.bids).toEqual([["100", "8"]]);
 
     expect(depth.asks).toEqual([]);
   });
@@ -211,6 +195,7 @@ describe("Order Book Depth", () => {
       symbol: "BTC",
       bids: [],
       asks: [],
+      lastUpdateId: ENGINE_STATE.lastUpdateId,
     });
   });
 });

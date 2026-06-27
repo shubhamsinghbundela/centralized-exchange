@@ -82,8 +82,3 @@ export const FILLS: Fill[] = [];
 export const ENGINE_STATE = {
   lastUpdateId: 0,
 };
-
-export function nextUpdateId() {
-  ENGINE_STATE.lastUpdateId++;
-  return ENGINE_STATE.lastUpdateId;
-}
