@@ -60,16 +60,13 @@ export interface CreateOrderInput {
   qty: number;
 }
 
-export interface DepthLevel {
-  price: number;
-  qty: number;
-}
+export type DepthLevel = [string, string];
 
-export interface DepthResponse {
+export type DepthResponse = {
   symbol: string;
   bids: DepthLevel[];
   asks: DepthLevel[];
-}
+};
 
 export const BALANCES = new Map<string, Record<string, Balance>>();
 export const ORDERBOOKS = new Map<string, OrderBook>();

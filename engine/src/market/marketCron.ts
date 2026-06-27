@@ -18,4 +18,9 @@ cron.schedule(
   },
 );
 
-console.log("Market cron started");
+console.log(
+  "Market Close cronJob scheduled at",
+  env.marketCloseTime,
+  "in timezone",
+  env.marketTimezone,
+);
