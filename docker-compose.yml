@@ -7,10 +7,6 @@ services:
       - "8001:8001"
     volumes:
       - redis-data:/data
-    command: >
-      redis-server
-      --save 60 5
-      --dbfilename dump.rdb
 
 volumes:
   redis-data:
