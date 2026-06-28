@@ -42,7 +42,9 @@ export function makers() {
 
   const side = Math.random() > 0.5 ? "buy" : "sell";
 
-  const price = side === "buy" ? 99 + Math.random() : 101 + Math.random();
+  const price = Number(
+    (side === "buy" ? 99 + Math.random() : 101 + Math.random()).toFixed(2),
+  );
 
   http.post(
     `${BASE_URL}/order`,
