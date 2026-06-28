@@ -1,5 +1,5 @@
 // import { handleMarketOrder } from "./handleMarketOrder";
-import { isMarketOpen } from "../market/marketState";
+import { isMarketOpen } from "../marketClose/marketCloseState";
 import type { CreateOrderInput } from "../store/exchange-store";
 import { handleLimitOrder } from "./handleLimitOrder";
 import { handleMarketOrder } from "./handleMarketOrder";

@@ -9,7 +9,7 @@ import { getOrder } from "./orders/getOrder.ts";
 import { cancelOrder } from "./orders/cancelOrder.ts";
 import { persistEngineState } from "./snapshot/persistence.ts";
 import { loadEngineState } from "./snapshot/loadEngineState.ts";
-import "../src/market/marketCron.ts";
+import "./marketClose/marketCloseCron.ts";
 
 export type EngineCommandType =
   | "deposit"
