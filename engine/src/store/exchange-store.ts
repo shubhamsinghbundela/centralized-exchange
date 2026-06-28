@@ -60,6 +60,15 @@ export interface CreateOrderInput {
   qty: number;
 }
 
+export interface DepthUpdate {
+  s: string;
+  b: [string, string][];
+  a: [string, string][];
+  U: number;
+  u: number;
+  T: number;
+}
+
 export type DepthLevel = [string, string];
 
 export type DepthResponse = {

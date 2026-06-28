@@ -10,6 +10,7 @@ import { cancelOrder } from "./orders/cancelOrder.ts";
 import { persistEngineState } from "./snapshot/persistence.ts";
 import { loadEngineState } from "./snapshot/loadEngineState.ts";
 import "./marketClose/marketCloseCron.ts";
+import type { DepthUpdate } from "./store/exchange-store.ts";
 
 export type EngineCommandType =
   | "deposit"
@@ -47,7 +48,18 @@ const responseClient = createClient({ url: env.redisUrl }).on(
   },
 );
 
-await Promise.all([brokerClient.connect(), responseClient.connect()]);
+const streamClient = createClient({ url: env.redisUrl }).on(
+  "error",
+  (error) => {
+    console.error("Redis stream client error", error);
+  },
+);
+
+await Promise.all([
+  brokerClient.connect(),
+  responseClient.connect(),
+  streamClient.connect(),
+]);
 
 await loadEngineState();
 
@@ -68,12 +80,35 @@ let mutationCount = 0;
 
 async function snapshotIfNeeded() {
   mutationCount++;
-  if (mutationCount % 5 === 0) {
-    console.log("Persisting engine state...");
-    await persistEngineState();
+
+  if (mutationCount % 5 !== 0) return;
+
+  console.log("Persisting engine state...");
+
+  await persistEngineState();
+
+  try {
     await brokerClient.sendCommand(["BGSAVE"]);
-    console.log("RDB snapshot created");
+    console.log("Redis background snapshot started.");
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("Background save already in progress")
+    ) {
+      console.log(
+        "Redis snapshot already in progress. Engine state is saved in Redis memory; skipping this snapshot.",
+      );
+      return;
+    }
+
+    throw error;
   }
+}
+
+async function publishDepthUpdate(depthUpdate: DepthUpdate) {
+  await streamClient.xAdd("depth-stream", "*", {
+    payload: JSON.stringify(depthUpdate),
+  });
 }
 
 async function sendResponse(
@@ -178,6 +213,15 @@ for (;;) {
 
   try {
     const data = await handleEngineRequest(message);
+
+    if (data && typeof data === "object" && "depthUpdate" in data) {
+      const { depthUpdate } = data as {
+        depthUpdate: DepthUpdate;
+      };
+
+      void publishDepthUpdate(depthUpdate).catch(console.error);
+    }
+
     await sendResponse(message.responseQueue, {
       correlationId: message.correlationId,
       ok: true,
