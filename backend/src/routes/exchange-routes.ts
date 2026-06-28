@@ -14,7 +14,7 @@ export const exchangeRouter = Router();
 
 exchangeRouter.post("/deposit", requireAuth, asyncHandler(depositMoney));
 exchangeRouter.post("/order", requireAuth, asyncHandler(createOrder));
-exchangeRouter.get("/depth/:symbol", requireAuth, asyncHandler(getDepth));
+exchangeRouter.get("/depth/:symbol", asyncHandler(getDepth));
 exchangeRouter.get("/balance", requireAuth, asyncHandler(getBalance));
 exchangeRouter.get("/order/:orderId", requireAuth, asyncHandler(getOrder));
 exchangeRouter.delete(
