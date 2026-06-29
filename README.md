@@ -1,36 +1,36 @@
-# 🚀 Centralized Exchange (CEX)
+# Centralized Exchange (CEX)
 
 A production-inspired **Centralized Exchange (CEX)** built from scratch using **Bun, TypeScript, Redis Streams, WebSockets, PostgreSQL, and Prisma**.
 
 The project demonstrates how modern exchanges process orders with an **event-driven architecture**, maintain an **in-memory matching engine**, stream **real-time order book updates**, and persist state using **Redis snapshots**.
 
-![Architecture](./assets/architecture.png)
+---
+
+## Features
+
+* JWT Authentication
+* Deposit & Balance Management
+* Limit Orders
+* Market Orders
+* In-Memory Order Book
+* Matching Engine
+* Real-time Market Depth
+* Order Cancellation
+* Order History & Trade History
+* WebSocket Orderbook & Trade Updates
+* Redis for Backend ↔ Engine Communication
+* Redis Snapshot Persistence
+* Automatic Recovery After Restart
+* Unit & Integration Tests with Bun Test + Supertest
+* Load Tested using k6
 
 ---
 
-## ✨ Features
-
-* 🔐 JWT Authentication
-* 💰 Deposit & Balance Management
-* 📈 Limit Orders
-* ⚡ Market Orders
-* 📚 In-Memory Order Book
-* 🤝 Price-Time Priority Matching Engine
-* 📊 Real-time Market Depth
-* 🔄 Order Cancellation
-* 📝 Order History & Trade History
-* 📡 WebSocket Orderbook & Trade Updates
-* 📨 Redis for Backend ↔ Engine Communication
-* 💾 Redis Snapshot Persistence
-* ♻️ Automatic Recovery After Restart
-* 🧪 Unit & Integration Tests with Bun Test + Supertest
-* 🚀 Load Tested using k6
-
----
-
-# 🏗️ Architecture
+# Architecture
 
 The exchange follows an event-driven architecture where the backend, matching engine, and WebSocket server are completely decoupled.
+
+Architecture Diagram
 
 https://excalidraw.com/#json=x0mu118cARoXMC3iq5EjW,NZmpMHCex516O4ntDz6hVQ
 
@@ -49,7 +49,7 @@ https://excalidraw.com/#json=x0mu118cARoXMC3iq5EjW,NZmpMHCex516O4ntDz6hVQ
 | Realtime       | WebSockets            |
 | Authentication | JWT                   |
 | Validation     | Zod                   |
-| Testing        | Bun Test   |
+| Testing        | Bun Test              |
 | Load Testing   | k6                    |
 | Precision      | Decimal.js            |
 | Persistence    | Redis Snapshots (RDB) |
@@ -75,6 +75,9 @@ centralized-exchange/
 ---
 
 # 📖 Blog 
+
+Want to learn how everything was built step by step?
+
 https://blog.realdev.club/building-a-mini-centralized-exchange-cex-with-bun-typescript-redis-and-postgresql
 ---
 
