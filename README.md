@@ -6,7 +6,7 @@ The project demonstrates how modern exchanges process orders with an **event-dri
 
 ---
 
-## Features
+## ✨ Features
 
 * JWT Authentication
 * Deposit & Balance Management
@@ -26,7 +26,7 @@ The project demonstrates how modern exchanges process orders with an **event-dri
 
 ---
 
-# Architecture
+# 🏗️ Architecture
 
 The exchange follows an event-driven architecture where the backend, matching engine, and WebSocket server are completely decoupled.
 
