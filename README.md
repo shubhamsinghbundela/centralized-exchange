@@ -92,11 +92,6 @@ If you found this project helpful:
 
 Contributions are always welcome!
 
----
-
-# 📜 License
-
-MIT License
 
 ---
 
