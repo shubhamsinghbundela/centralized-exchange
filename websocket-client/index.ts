@@ -113,16 +113,23 @@ ws.onmessage = async (event) => {
 };
 
 setInterval(() => {
-  const bestBid = Object.keys(orderbook.bids).sort(
-    (a, b) => Number(b) - Number(a),
-  );
+  const bids = Object.entries(orderbook.bids).sort(
+    (a, b) => Number(b[0]) - Number(a[0]),
+  ); // Highest price first
 
-  const bestAsk = Object.keys(orderbook.asks).sort(
-    (a, b) => Number(a) - Number(b),
-  );
+  const asks = Object.entries(orderbook.asks).sort(
+    (a, b) => Number(a[0]) - Number(b[0]),
+  ); // Lowest price first
 
   console.clear();
 
-  console.log("Best Bid:", bestBid);
-  console.log("Best Ask:", bestAsk);
+  console.log("===== BIDS =====");
+  bids.forEach(([price, qty]) => {
+    console.log(`Price: ${price} | Qty: ${qty}`);
+  });
+
+  console.log("\n===== ASKS =====");
+  asks.forEach(([price, qty]) => {
+    console.log(`Price: ${price} | Qty: ${qty}`);
+  });
 }, 1000);
