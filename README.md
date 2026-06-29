@@ -85,10 +85,10 @@ https://blog.realdev.club/building-a-mini-centralized-exchange-cex-with-bun-type
 
 If you found this project helpful:
 
-* ⭐ Star the repository
-* 🍴 Fork it
-* 🐛 Open issues
-* 🚀 Submit pull requests
+* Star the repository
+* Fork it
+* Open issues
+* Submit pull requests
 
 Contributions are always welcome!
 
