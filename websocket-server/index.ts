@@ -82,9 +82,7 @@ async function poll() {
 
     for (const stream of result) {
       for (const message of stream.messages) {
-        console.log("Received from stream:", message);
         const depth = JSON.parse(message.message.payload);
-        console.log(depth);
 
         const key = `depth.${depth.s}`;
 
