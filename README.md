@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/133aa36b-4dc7-473e-9aea-79e58712288e
+
 # Centralized Exchange (CEX)
 
 A production-inspired **Centralized Exchange (CEX)** built from scratch using **Bun, TypeScript, Redis Streams, WebSockets, PostgreSQL, and Prisma**.
@@ -30,9 +34,10 @@ The project demonstrates how modern exchanges process orders with an **event-dri
 
 The exchange follows an event-driven architecture where the backend, matching engine, and WebSocket server are completely decoupled.
 
-Architecture Diagram
+Architecture Diagram: https://excalidraw.com/#json=x0mu118cARoXMC3iq5EjW,NZmpMHCex516O4ntDz6hVQ
 
-https://excalidraw.com/#json=x0mu118cARoXMC3iq5EjW,NZmpMHCex516O4ntDz6hVQ
+https://github.com/user-attachments/assets/36db3890-1fcf-471c-a251-377482d8e3eb
+
 
 ---
 
