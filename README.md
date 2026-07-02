@@ -1,7 +1,3 @@
-
-
-https://github.com/user-attachments/assets/133aa36b-4dc7-473e-9aea-79e58712288e
-
 # Centralized Exchange (CEX)
 
 A production-inspired **Centralized Exchange (CEX)** built from scratch using **Bun, TypeScript, Redis Streams, WebSockets, PostgreSQL, and Prisma**.
