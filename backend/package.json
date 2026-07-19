@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run src/index.ts",
+    "dev:docker": "bunx prisma migrate deploy && bun run src/index.ts",
     "db": "bunx prisma migrate dev && bunx prisma generate"
   },
   "devDependencies": {
