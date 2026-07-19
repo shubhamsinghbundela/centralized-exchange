@@ -202,6 +202,8 @@ for (;;) {
   const item = await brokerClient.brPop(env.incomingQueue, 0);
   if (!item) continue;
 
+  console.log("Engine received:", item.element);
+
   let message: EngineRequest;
 
   try {
@@ -222,6 +224,7 @@ for (;;) {
       void publishDepthUpdate(depthUpdate).catch(console.error);
     }
 
+    console.log("Sending response to:", message.responseQueue);
     await sendResponse(message.responseQueue, {
       correlationId: message.correlationId,
       ok: true,

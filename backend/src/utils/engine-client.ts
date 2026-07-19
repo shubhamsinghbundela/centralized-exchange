@@ -31,7 +31,10 @@ export async function sendToEngine(
   payload: Record<string, unknown>,
 ): Promise<EngineResponse> {
   const correlationId = crypto.randomUUID();
-  const responsePromise = waitForEngineResponse(correlationId, env.engineTimeoutMs);
+  const responsePromise = waitForEngineResponse(
+    correlationId,
+    env.engineTimeoutMs,
+  );
 
   const message: EngineRequest = {
     correlationId,
@@ -40,6 +43,7 @@ export async function sendToEngine(
     payload,
   };
 
+  console.log("Sending to engine:", message);
   await publisher.lPush(env.incomingQueue, JSON.stringify(message));
   return responsePromise;
 }
@@ -50,6 +54,8 @@ export async function listenForEngineResponses(): Promise<void> {
   for (;;) {
     const response = await subscriber.brPop(env.responseQueue, 0);
     if (!response) continue;
+
+    console.log("Backend received response:", response.element);
 
     try {
       const parsedResponse = JSON.parse(response.element) as EngineResponse;
