@@ -88,7 +88,7 @@ For complete Docker setup instructions, including:
 - Building Backend and Engine Docker images
 - Running all containers
 
-👉 See the [Docker Setup Guide](./DOCKER.md)
+👉 See the [Docker Setup Guide](./Docker.md)
 
 ---
 
