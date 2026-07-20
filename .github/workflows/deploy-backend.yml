@@ -47,6 +47,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
+            docker container prune -f
+            docker image prune -a -f --filter "until=24h"
+            docker builder prune -f --filter "until=24h"
+
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
 
             docker rm -f cex-backend || true
