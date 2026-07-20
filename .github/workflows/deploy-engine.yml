@@ -47,12 +47,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
 
             docker rm -f cex-engine || true
-            docker container prune -f
-            docker image prune -a -f 
-            docker builder prune -f
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
 
             docker run -d \
               --name cex-engine \

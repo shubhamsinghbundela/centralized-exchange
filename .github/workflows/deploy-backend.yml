@@ -47,16 +47,25 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
+            set -e
+
+            echo "=== Disk before deployment ==="
+            df -h /
+            df -i /
 
             docker rm -f cex-backend || true
-            docker container prune -f
-            docker image prune -a -f 
-            docker builder prune -f
+
+            docker image prune -a -f
+            docker builder prune -a -f
+
+            echo "=== Disk after cleanup ==="
+            df -h /
 
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
 
             docker run -d \
               --name cex-backend \
+              --restart unless-stopped \
               --network cex-network \
               -e DATABASE_URL="${{ secrets.BACKEND_DATABASE_URL }}" \
               -e REDIS_URL="redis://redis-stack:6379" \
@@ -68,3 +77,7 @@ jobs:
               ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
 
             docker image prune -f
+
+            echo "=== Deployment completed ==="
+            docker ps --filter "name=cex-backend"
+            df -h /
