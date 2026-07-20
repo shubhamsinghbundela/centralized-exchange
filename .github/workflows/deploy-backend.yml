@@ -46,17 +46,32 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script_stop: true
           script: |
-            docker container prune -f
-            docker image prune -a -f --filter "until=24h"
-            docker builder prune -f --filter "until=24h"
+            set -e
 
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
+            echo "=== Disk before cleanup ==="
+            df -h /
 
+            # Remove previous backend container first
             docker rm -f cex-backend || true
 
+            # Remove ALL images not used by running containers
+            docker image prune -a -f
+
+            # Remove build cache
+            docker builder prune -a -f
+
+            echo "=== Disk after cleanup ==="
+            df -h /
+
+            # Pull exactly once
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
+
+            # Start backend
             docker run -d \
               --name cex-backend \
+              --restart unless-stopped \
               --network cex-network \
               -e DATABASE_URL="${{ secrets.BACKEND_DATABASE_URL }}" \
               -e REDIS_URL="redis://redis-stack:6379" \
@@ -68,3 +83,6 @@ jobs:
               ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
 
             docker image prune -f
+
+            echo "=== Disk after deployment ==="
+            df -h /
