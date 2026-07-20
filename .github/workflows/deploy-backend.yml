@@ -56,6 +56,10 @@ jobs:
               --network cex-network \
               -e DATABASE_URL="${{ secrets.BACKEND_DATABASE_URL }}" \
               -e REDIS_URL="redis://redis-stack:6379" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              -e INCOMING_QUEUE="${{ secrets.INCOMING_QUEUE }}" \
+              -e BACKEND_QUEUE_ID="${{ secrets.BACKEND_QUEUE_ID }}" \
+              -e ENGINE_TIMEOUT_MS="${{ secrets.ENGINE_TIMEOUT_MS }}" \
               -p 3000:3000 \
               ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
 
