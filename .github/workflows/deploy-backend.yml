@@ -1,0 +1,34 @@
+name: Build and Push Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          build-args: |
+            DATABASE_URL=${{ secrets.BACKEND_DATABASE_URL }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:latest
