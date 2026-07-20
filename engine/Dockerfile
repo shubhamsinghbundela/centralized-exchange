@@ -8,8 +8,8 @@ RUN bun install --frozen-lockfile
 
 COPY . .
 
-ARG DATABASE_URL="postgresql://user:password@engine-postgres:5432/engine_db"
-ENV DATABASE_URL=$DATABASE_URL
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
 
 RUN bunx prisma generate
 

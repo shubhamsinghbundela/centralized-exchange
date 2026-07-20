@@ -10,7 +10,10 @@ const orderbook: Orderbook = {
   asks: {},
 };
 let orderbookInitialised = false;
-const ws = new WebSocket("ws://localhost:8080");
+const WS_URL = process.env.WS_URL ?? "ws://localhost:8080";
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3000";
+
+const ws = new WebSocket(WS_URL);
 
 const buffer: {
   updatedBids: [string, string][];
@@ -50,6 +53,14 @@ ws.onopen = () => {
   );
 };
 
+ws.onerror = (error) => {
+  console.error("WebSocket error:", error);
+};
+
+ws.onclose = (event) => {
+  console.log("WebSocket closed:", event.code, event.reason);
+};
+
 ws.onmessage = async (event) => {
   const message = JSON.parse(event.data);
 
@@ -57,7 +68,7 @@ ws.onmessage = async (event) => {
   if ("result" in message && message.id === 1) {
     console.log("Subscribed successfully");
 
-    const res = await axios.get("http://localhost:3000/depth/BTC");
+    const res = await axios.get(`${BACKEND_URL}/depth/BTC`);
 
     const { bids, asks, lastUpdateId } = res.data;
 
