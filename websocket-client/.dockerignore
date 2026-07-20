@@ -1,4 +1,7 @@
 node_modules
-.env
+.bun
 .git
+.env
 *.log
+dist
+coverage

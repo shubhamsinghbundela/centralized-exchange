@@ -28,6 +28,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
+          no-cache: true
           build-args: |
             DATABASE_URL=${{ secrets.BACKEND_DATABASE_URL }}
           tags: |
