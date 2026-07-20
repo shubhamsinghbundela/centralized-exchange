@@ -49,11 +49,6 @@ jobs:
           script_stop: true
           script: |
             set -e
-
-            echo "=== Disk before cleanup ==="
-            df -h /
-
-            # Remove previous backend container first
             docker rm -f cex-backend || true
 
             # Remove ALL images not used by running containers
@@ -61,9 +56,6 @@ jobs:
 
             # Remove build cache
             docker builder prune -a -f
-
-            echo "=== Disk after cleanup ==="
-            df -h /
 
             # Pull exactly once
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
