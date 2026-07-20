@@ -2,7 +2,7 @@ import http from "k6/http";
 import TOKENS from "./token.js";
 import { check } from "k6";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "http://159.89.173.75:3000";
 
 //Seeding balances (Not Doing LoadTesting here)
 export function setup() {

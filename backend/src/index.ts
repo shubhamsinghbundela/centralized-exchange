@@ -22,7 +22,7 @@ app.use(express.json());
 
 app.get("/health", async (_req, res) => {
   await pingRedis();
-  res.json({ ok: true });
+  res.json({ message: "health is good" });
 });
 
 app.use(appRouter);
