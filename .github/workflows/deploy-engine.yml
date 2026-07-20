@@ -1,4 +1,4 @@
-name: Build and Push Engine
+name: Build and Deploy Engine
 
 on:
   push:
@@ -33,3 +33,32 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Engine
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
+
+            docker rm -f cex-engine || true
+
+            docker run -d \
+              --name cex-engine \
+              --network cex-network \
+              -e DATABASE_URL="${{ secrets.ENGINE_DATABASE_URL }}" \
+              -e REDIS_URL="${{ secrets.REDIS_URL }}" \
+              -e INCOMING_QUEUE="${{ secrets.INCOMING_QUEUE }}" \
+              -e MARKET_CLOSE_CRON="${{ secrets.MARKET_CLOSE_CRON }}" \
+              -e MARKET_TIMEZONE="${{ secrets.MARKET_TIMEZONE }}" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
+
+            docker image prune -f
