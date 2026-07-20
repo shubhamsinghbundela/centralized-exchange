@@ -1,0 +1,35 @@
+name: Build and Push WebSocket Server
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths:
+      - "websocket-server/**"
+      - ".github/workflows/deploy-websocket-server.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push WebSocket Server Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./websocket-server
+          file: ./websocket-server/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/cex-websocket-server:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/cex-websocket-server:latest
