@@ -1,0 +1,35 @@
+name: Build and Push Engine
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "engine/**"
+      - ".github/workflows/deploy-engine.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Engine Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./engine
+          file: ./engine/Dockerfile
+          push: true
+          build-args: |
+            DATABASE_URL=${{ secrets.ENGINE_DATABASE_URL }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:latest
