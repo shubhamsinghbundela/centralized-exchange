@@ -47,15 +47,11 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            set -e
+
             docker rm -f cex-engine || true
-
-            # Remove ALL images not used by running containers
-            docker image prune -a -f
-
-            # Remove build cache
-            docker builder prune -a -f
-
+            docker container prune -f
+            docker image prune -a -f 
+            docker builder prune -f
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
 
             docker run -d \
@@ -67,4 +63,5 @@ jobs:
               -e MARKET_CLOSE_CRON="${{ secrets.MARKET_CLOSE_CRON }}" \
               -e MARKET_TIMEZONE="${{ secrets.MARKET_TIMEZONE }}" \
               ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
+
             docker image prune -f
