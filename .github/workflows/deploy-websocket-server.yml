@@ -1,4 +1,4 @@
-name: Build and Push WebSocket Server
+name: Build and Deploy WebSocket Server
 
 on:
   workflow_dispatch:
@@ -33,3 +33,30 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/cex-websocket-server:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/cex-websocket-server:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy WebSocket Server to DigitalOcean
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-websocket-server:${{ github.sha }}
+
+            docker rm -f cex-websocket-server || true
+
+            docker run -d \
+              --name cex-websocket-server \
+              --network cex-network \
+              -e REDIS_URL="${{ secrets.REDIS_URL }}" \
+              -e CONSUMER_GROUP="${{ secrets.CONSUMER_GROUP }}" \
+              -p 8080:8080 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/cex-websocket-server:${{ github.sha }}
+
+            docker image prune -f
