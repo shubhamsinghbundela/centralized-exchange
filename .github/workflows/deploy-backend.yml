@@ -1,4 +1,4 @@
-name: Build and Push Backend
+name: Build and Deploy Backend
 
 on:
   push:
@@ -33,3 +33,30 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Backend to DigitalOcean
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
+
+            docker rm -f cex-backend || true
+
+            docker run -d \
+              --name cex-backend \
+              --network cex-network \
+              -e DATABASE_URL="${{ secrets.BACKEND_DATABASE_URL }}" \
+              -e REDIS_URL="redis://redis-stack:6379" \
+              -p 3000:3000 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/cex-backend:${{ github.sha }}
+
+            docker image prune -f
