@@ -28,6 +28,7 @@ jobs:
           context: ./engine
           file: ./engine/Dockerfile
           push: true
+          no-cache: true
           build-args: |
             DATABASE_URL=${{ secrets.ENGINE_DATABASE_URL }}
           tags: |
@@ -46,11 +47,16 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          no-cache: true
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
+
+            set -e
 
             docker rm -f cex-engine || true
+
+            docker image prune -a -f
+            docker builder prune -a -f
+
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
 
             docker run -d \
               --name cex-engine \
