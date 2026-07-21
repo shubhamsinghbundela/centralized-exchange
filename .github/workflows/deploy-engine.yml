@@ -53,8 +53,6 @@ jobs:
 
             docker rm -f cex-engine || true
 
-            docker image prune -a -f
-            docker builder prune -a -f
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
 
             docker run -d \

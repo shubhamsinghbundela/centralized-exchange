@@ -47,10 +47,8 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
+            set -e
             docker rm -f cex-websocket-server || true
-            docker container prune -f
-            docker image prune -a -f 
-            docker builder prune -f 
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-websocket-server:${{ github.sha }}
             docker run -d \
               --name cex-websocket-server \
