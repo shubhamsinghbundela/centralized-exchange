@@ -51,7 +51,6 @@ jobs:
             set -e
 
             docker rm -f cex-backend || true
-
             docker image prune -a -f
             docker builder prune -a -f
 
