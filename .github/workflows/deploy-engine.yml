@@ -51,9 +51,9 @@ jobs:
 
             set -e
 
-            docker rm -f cex-engine || true
-
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-engine:${{ github.sha }}
+
+            docker rm -f cex-engine || true
 
             docker run -d \
               --name cex-engine \

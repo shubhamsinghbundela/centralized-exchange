@@ -48,9 +48,10 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             set -e
-            docker rm -f cex-websocket-client || true
 
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cex-websocket-client:${{ github.sha }}
+
+            docker rm -f cex-websocket-client || true
 
             docker run -d \
               --name cex-websocket-client \
