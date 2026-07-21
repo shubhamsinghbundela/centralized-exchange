@@ -1,7 +1,4 @@
 node_modules
-.bun
-.git
 .env
+.git
 *.log
-dist
-coverage
